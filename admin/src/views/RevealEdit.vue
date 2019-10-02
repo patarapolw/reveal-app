@@ -11,9 +11,9 @@ v-container.h-100.d-flex.flex-column.pa-0
         v-btn(text :disabled="!title" @click="save") Save
   v-row(style="overflow-y: scroll; margin-top: 75px")
     v-col(:class="hasPreview ? 'col-6 pr-0' : 'col-12'")
-      codemirror.h-100(ref="cm" v-model="code" :options="cmOptions" @input="onCmCodeChange")
+      codemirror.h-100(ref="cm" v-model="code" :options="cmOptions")
     v-col(v-if="hasPreview")
-      v-card.h-100.pa-3(v-html="html")
+      iframe(ref="iframe" frameborder="0" :src="iframeUrl")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
@@ -42,7 +42,7 @@ export default class BlogEdit extends Vue {
   private date: Date | null = null;
   private tag: string[] = [];
 
-  private html = "";
+  private iframeUrl = "about:blank";
   private hasPreview = adminConfig.blog.preview;
 
   private snackbar = {
@@ -60,10 +60,14 @@ export default class BlogEdit extends Vue {
     return (this.$refs.cm as any).codemirror;
   }
 
+  get iframe(): HTMLIFrameElement {
+    return this.$refs.iframe as any;
+  }
+
   reset() {
     this._id = null;
     this.code = "";
-    this.html = "";
+    this.iframeUrl = "about:blank";
     this.title = null;
     this.date = null;
     this.tag = [];
@@ -74,9 +78,12 @@ export default class BlogEdit extends Vue {
 
   @Watch("$route", {deep: true})
   async load() {
-    const {_id} = this.$route.query
+    const {_id} = this.$route.query;
     if (_id) {
-      const url = `/api/post/${_id}`;
+      this.iframeUrl = `/web/reveal.html?_id=${_id}`;
+      this.iframe.contentWindow!.location.reload();
+
+      const url = `/api/reveal/${_id}`;
 
       try {
         const {_id, content, title, date, tag} = await (await fetch(url, {
@@ -100,7 +107,7 @@ export default class BlogEdit extends Vue {
 
   async save() {
     try {
-      const {_id} = await (await fetch("/api/post/", {
+      const {_id} = await (await fetch("/api/reveal/", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -128,40 +135,12 @@ export default class BlogEdit extends Vue {
       this.snackbar.show = true;
     }
   }
-
-  onCmCodeChange(newCode: string) {
-    this.code = newCode;
-    const {data, content} = matter(newCode);
-
-    let lang = "markdown";
-    let trueCode = content;
-    
-    this._id = data._id || null;
-    this.title = data.title || null;
-    this.date = toDate(data.date || "") || null;
-    this.tag = Array.isArray(data.tag) ? data.tag : [];
-
-    if (content.startsWith("//")) {
-      const lines = content.split("\n");
-      const newLang = lines[0].split(" ")[1];
-      if (Object.keys(CodeMirror.modes).includes(newLang)) {
-        lang = newLang;
-      }
-      trueCode = lines.slice(1).join("\n");
-    }
-
-    this.cmOptions.mode.base = lang;
-    if (lang === "pug") {
-      this.html = pugCompile(trueCode);
-    } else {
-      this.html = mdCompile(trueCode);
-    }
-  }
 }
 </script>
 
 <style lang="scss" scoped>
-.h-100 {
+iframe {
   height: 100%;
+  width: 100%;
 }
 </style>

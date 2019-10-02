@@ -21,26 +21,36 @@ v-app
       v-list-group
         template(v-slot:activator)
           v-list-item-avatar
-            v-icon mdi-sitemap
+            v-icon mdi-frequently-asked-questions
           v-list-item-content
-            v-list-item-title Resources
-        v-list-item(to="/resources/edit")
+            v-list-item-title Quiz
+        v-list-item(to="/quiz/edit")
           v-list-item-avatar.ml-3
               v-icon mdi-plus
           v-list-item-content
             v-list-item-title New entry
-        v-list-item(to="/resources/view")
+        v-list-item(to="/quiz/view")
           v-list-item-avatar.ml-3
               v-icon mdi-view-list
           v-list-item-content
             v-list-item-title View entries
+        v-list-item(to="/quiz/users")
+          v-list-item-avatar.ml-3
+            v-icon mdi-account-search
+          v-list-item-content
+            v-list-item-title Quiz results
       v-list-group
         template(v-slot:activator)
           v-list-item-avatar
-            v-icon mdi-frequently-asked-questions
+            v-icon mdi-play-box-outline
           v-list-item-content
-            v-list-item-title Quiz
-        v-list-item(to="/quiz/view")
+            v-list-item-title Presentations
+        v-list-item(to="/reveal/edit")
+          v-list-item-avatar.ml-3
+              v-icon mdi-plus
+          v-list-item-content
+            v-list-item-title New entry
+        v-list-item(to="/reveal/view")
           v-list-item-avatar.ml-3
               v-icon mdi-view-list
           v-list-item-content
@@ -98,7 +108,28 @@ img {
   max-width: 100%;
 }
 
+iframe {
+  border: none;
+  border-width: 0;
+}
+
 .w-100 {
   width: 100%;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.click-table {
+  width: 100%;
+
+  tbody tr {
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgb(219, 236, 241) !important;
+    }
+  }
 }
 </style>

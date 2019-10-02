@@ -23,7 +23,10 @@
     ],
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "*": ["../@types/*"]
+    }
   },
   "include": [
     "src/**/*"

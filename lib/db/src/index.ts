@@ -1,48 +1,104 @@
-import { pre, prop, Typegoose, Ref, index, InstanceType } from "@hasezoey/typegoose";
+import { pre, prop, Ref, index, DocumentType, getModelForClass } from "@typegoose/typegoose";
 import { generateSecret } from "./util";
 import uuid4 from "uuid/v4";
 import SparkMD5 from "spark-md5";
 import stringify from "fast-json-stable-stringify";
 import mongoose from "mongoose";
+import UrlSafeString from "url-safe-string";
+import pinyin from "chinese-to-pinyin";
+import QParser, { ISortOptions } from "q2filter";
+
+const uss = new UrlSafeString({
+  regexRemovePattern: /((?!([a-z0-9.])).)/gi
+});
 
 @pre<User>("save", async function () {
   if (!this.secret) {
     this.secret = await generateSecret();
   }
 })
-class User extends Typegoose {
+class User {
   @prop({ required: true, unique: true }) email!: string;
   @prop() picture?: string;
   @prop({ required: true }) secret!: string;
 }
 
-const UserModel = new User().getModelForClass(User);
+const UserModel = getModelForClass(User);
 
-class Post extends Typegoose {
-  @prop({ default: uuid4() }) _id!: string;
+@pre<Post>("save", async function () {
+  if (!this._id) {
+    const ids = await PostModel.find().select({_id: 1});
+    let outputId = uss.generate(pinyin(this.title, {
+      keepRest: true, toneToNumber: true
+    }));
+
+    while (outputId) {
+      if (!ids.map((el) => el._id).includes(outputId)) {
+        break;
+      } else {
+        const m = / (\d+)$/.exec(outputId);
+        let i = 1;
+
+        if (m) {
+          i = parseInt(m[1]) + 1;
+        }
+
+        outputId = `${outputId.replace(/ (\d+)$/, "")} (${i})`;
+      }
+    }
+
+    this._id = outputId || uuid4();
+  }
+})
+class Post {
+  @prop() _id!: string;
   @prop({ required: true, unique: true }) title!: string;
   @prop() date?: Date;
   @prop({ default: [] }) tag!: string[];
   @prop({ required: true }) content!: string;
+
+  async findByQ(q: string, offset: number = 0, limit: number | null = 10, sort?: ISortOptions<Post>) {
+    const parser = new QParser<Post>(q, {
+      anyOf: new Set(["title", "tag"]),
+      isString: new Set(["title", "tag"]),
+      isDate: new Set(["date"])
+    });
+
+    const fullCond = parser.getCondFull();
+    sort = fullCond.sortBy || sort;
+
+    const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {date: -1};
+
+    const count = await PostModel.find(fullCond.cond).countDocuments();
+    let chain = PostModel.find(fullCond.cond).sort(sorter).skip(offset);
+    if (limit) {
+      chain = chain.limit(limit);
+    }
+
+    const data = await chain;
+
+    return {count, data};
+  }
 }
 
-const PostModel = new Post().getModelForClass(Post);
+const PostModel = getModelForClass(Post);
+PostModel.findByQ = new Post().findByQ;
 
 @pre<Card>("save", function () {
   const { front, back } = this;
   this.key = SparkMD5.hash(stringify({ front, back }));
 })
-class Card extends Typegoose {
+class Card {
   @prop({ required: true, unique: true }) key!: string;
   @prop({ required: true }) front!: string;
   @prop() back?: string;
   @prop({ default: [] }) tag!: string[];
 }
 
-const CardModel = new Card().getModelForClass(Card);
+const CardModel = getModelForClass(Card);
 
 @index({ user: 1, card: 1 }, { unique: true })
-class Quiz extends Typegoose {
+class Quiz {
   @prop({ ref: User, required: true }) user!: Ref<User>;
   @prop({ ref: Card, required: true }) card!: Ref<Card>;
   @prop() note?: string;
@@ -54,16 +110,76 @@ class Quiz extends Typegoose {
   };
 }
 
-const QuizModel = new Quiz().getModelForClass(Quiz);
+const QuizModel = getModelForClass(Quiz);
+
+@pre<Reveal>("save", async function () {
+  if (!this._id) {
+    const ids = await RevealModel.find().select({_id: 1});
+    let outputId = uss.generate(pinyin(this.title, {
+      keepRest: true, toneToNumber: true
+    }));
+
+    while (outputId) {
+      if (!ids.map((el) => el._id).includes(outputId)) {
+        break;
+      } else {
+        const m = / (\d+)$/.exec(outputId);
+        let i = 1;
+
+        if (m) {
+          i = parseInt(m[1]) + 1;
+        }
+
+        outputId = `${outputId.replace(/ (\d+)$/, "")} (${i})`;
+      }
+    }
+
+    this._id = outputId || uuid4();
+  }
+})
+class Reveal {
+  @prop() _id!: string;
+  @prop({ required: true, unique: true }) title!: string;
+  @prop() date?: Date;
+  @prop({ default: [] }) tag!: string[];
+  @prop({ required: true }) content!: string;
+
+  async findByQ(q: string, offset: number = 0, limit: number | null = 10, sort?: ISortOptions<Reveal>) {
+    const parser = new QParser<Reveal>(q, {
+      anyOf: new Set(["title", "tag"]),
+      isString: new Set(["title", "tag"]),
+      isDate: new Set(["date"])
+    });
+
+    const fullCond = parser.getCondFull();
+    sort = fullCond.sortBy || sort;
+
+    const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {date: -1};
+
+    const count = await RevealModel.find(fullCond.cond).countDocuments();
+    let chain = RevealModel.find(fullCond.cond).sort(sorter).skip(offset);
+    if (limit) {
+      chain = chain.limit(limit);
+    }
+
+    const data = await chain;
+
+    return {count, data};
+  }
+}
+
+const RevealModel = getModelForClass(Reveal);
+RevealModel.findByQ = new Reveal().findByQ;
 
 export default class Database {
-  public currentUser?: InstanceType<User>;
+  public currentUser?: DocumentType<User>;
 
   public cols = {
     user: UserModel,
     post: PostModel,
     card: CardModel,
-    quiz: QuizModel
+    quiz: QuizModel,
+    reveal: RevealModel
   };
 
   constructor(private mongoUri: string) { }

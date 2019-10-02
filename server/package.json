@@ -22,7 +22,6 @@
     "@types/passport-auth0": "^1.0.2",
     "@types/passport-local": "^1.0.33",
     "@zhsrs/db": "file:../lib/db",
-    "chinese-to-pinyin": "^1.1.2",
     "connect-mongodb-session": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",
@@ -33,8 +32,6 @@
     "passport": "^0.4.0",
     "passport-auth0": "^1.2.1",
     "passport-local": "^1.0.0",
-    "q2filter": "^0.2.0",
-    "url-safe-string": "^1.1.0",
     "valid-moment": "^1.0.0"
   },
   "devDependencies": {

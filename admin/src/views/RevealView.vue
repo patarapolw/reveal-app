@@ -61,7 +61,7 @@ export default class BlogView extends Vue {
       const {q, page, limit, sortBy, desc} = this.$route.query;
       const perPage = limit ? parseInt(limit as string) : 10;
 
-      const r = await (await fetch("/api/post/", {
+      const r = await (await fetch("/api/reveal/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -95,7 +95,7 @@ export default class BlogView extends Vue {
   preview(raw: string): string {
     const {content} = matter(raw);
     let lang = "markdown";
-    let trueCode = content.split("===")[0];
+    let trueCode = content.split("---")[0];
 
     if (content.startsWith("//")) {
       const lines = content.split("\n");
@@ -144,7 +144,7 @@ export default class BlogView extends Vue {
   }
 
   clickRow(data: any) {
-    const url = this.$router.resolve({path: "/blog/edit", query: {_id: data._id}});
+    const url = this.$router.resolve({path: "/reveal/edit", query: {_id: data._id}});
     open(url.href, "_blank");
   }
 }

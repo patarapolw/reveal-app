@@ -3,12 +3,12 @@ import { g } from "../config";
 import { unUndefined } from "../util";
 import { toDate } from "valid-moment";
 
-const postRouter = Router();
+const revealRouter = Router();
 
-postRouter.post("/", async (req, res, next) => {
+revealRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort } = req.body;
-    const r = await g.db!.cols.post.findByQ(q, offset, limit, sort);
+    const r = await g.db!.cols.reveal.findByQ(q, offset, limit, sort);
 
     return res.json(r);
   } catch(e) {
@@ -16,7 +16,7 @@ postRouter.post("/", async (req, res, next) => {
   }
 })
 
-postRouter.put("/", async (req, res, next) => {
+revealRouter.put("/", async (req, res, next) => {
   try {
     const { _id, newId, title, date, tag, content } = req.body;
     const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content });
@@ -24,14 +24,14 @@ postRouter.put("/", async (req, res, next) => {
 
     if (!_id) {
       while (true) {
-        const p = await g.db!.cols.post.create({
+        const p = await g.db!.cols.reveal.create({
           _id: outputId,
           ...payload
         });
         outputId = p.id;
       }
     } else {
-      await g.db!.cols.post.findByIdAndUpdate(_id, {$set: payload});
+      await g.db!.cols.reveal.findByIdAndUpdate(_id, {$set: payload});
     }
     
     return res.json({
@@ -42,22 +42,22 @@ postRouter.put("/", async (req, res, next) => {
   }
 });
 
-postRouter.post("/:id", async (req, res, next) => {
+revealRouter.post("/:id", async (req, res, next) => {
   try {
-    const p = await g.db!.cols.post.findById(req.params.id)
+    const p = await g.db!.cols.reveal.findById(req.params.id)
     return res.json(p);
   } catch(e) {
     return next(e);
   }
 });
 
-postRouter.delete("/:id", async (req, res, next) => {
+revealRouter.delete("/:id", async (req, res, next) => {
   try {
-    const p = await g.db!.cols.post.findByIdAndDelete(req.params.id)
+    const p = await g.db!.cols.reveal.findByIdAndDelete(req.params.id)
     return res.json(p);
   } catch(e) {
     return next(e);
   }
 });
 
-export default postRouter;
+export default revealRouter;

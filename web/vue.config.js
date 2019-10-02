@@ -1,0 +1,10 @@
+module.exports = {
+  pages: {
+    index: "src/main.ts",
+    reveal: "src/reveal.ts"
+  },
+  devServer: {
+    port: 9000,
+    proxy: "http://localhost:24000"
+  }
+}

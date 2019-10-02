@@ -27,7 +27,7 @@ Vue.use(VueCodemirror, {
     lineNumbers: true,
     autoCloseBrackets: true,
     gutters: true,
-    line: true
+    lineWrapping: true
   }
 })
 

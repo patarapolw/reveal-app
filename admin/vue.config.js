@@ -11,6 +11,17 @@ module.exports = {
     });
   },
   devServer: {
-    proxy: "http://localhost:24000"
+    port: 5000,
+    proxy: {
+      "^/web": {
+        target: "http://localhost:9000",
+        pathRewrite: {
+          '^/web' : ''
+        }
+      },
+      "^/api": {
+        target: "http://localhost:24000"
+      }
+    }
   }
 }
