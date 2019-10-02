@@ -18,18 +18,16 @@ postRouter.post("/", async (req, res, next) => {
 
 postRouter.put("/", async (req, res, next) => {
   try {
-    const { _id, newId, title, date, tag, content } = req.body;
-    const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content });
+    const { _id, newId, title, date, tag, content, hidden, type } = req.body;
+    const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content, hidden, type });
     let outputId = _id || newId || undefined;
 
     if (!_id) {
-      while (true) {
-        const p = await g.db!.cols.post.create({
-          _id: outputId,
-          ...payload
-        });
-        outputId = p.id;
-      }
+      const p = await g.db!.cols.post.create({
+        _id: await g.db!.cols.post.getSafeId(outputId || title),
+        ...payload
+      });
+      outputId = p.id;
     } else {
       await g.db!.cols.post.findByIdAndUpdate(_id, {$set: payload});
     }

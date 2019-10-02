@@ -2,23 +2,23 @@
 v-app
   v-navigation-drawer(v-model="isDrawer" :clipped="$vuetify.breakpoint.lgAndUp" app)
     v-list(dense)
-      v-list-group(value="true")
+      v-list-group(:value="$route.path.startsWith('/post')")
         template(v-slot:activator)
           v-list-item-avatar
             v-icon mdi-home
           v-list-item-content
-            v-list-item-title Blog
-        v-list-item(to="/blog/edit")
+            v-list-item-title Posts
+        v-list-item(to="/post/edit")
           v-list-item-avatar.ml-3
               v-icon mdi-plus
           v-list-item-content
             v-list-item-title New entry
-        v-list-item(to="/blog/view")
+        v-list-item(to="/post/view")
           v-list-item-avatar.ml-3
               v-icon mdi-view-list
           v-list-item-content
             v-list-item-title View entries
-      v-list-group
+      v-list-group(:value="$route.path.startsWith('/quiz')")
         template(v-slot:activator)
           v-list-item-avatar
             v-icon mdi-frequently-asked-questions
@@ -39,7 +39,7 @@ v-app
             v-icon mdi-account-search
           v-list-item-content
             v-list-item-title Quiz results
-      v-list-group
+      v-list-group(:value="$route.path.startsWith('/reveal')")
         template(v-slot:activator)
           v-list-item-avatar
             v-icon mdi-play-box-outline
@@ -111,6 +111,10 @@ img {
 iframe {
   border: none;
   border-width: 0;
+}
+
+pre {
+  white-space: pre-wrap;
 }
 
 .w-100 {

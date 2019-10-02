@@ -11,6 +11,7 @@ import "codemirror/mode/yaml/yaml.js";
 import "codemirror/mode/yaml-frontmatter/yaml-frontmatter.js";
 import "codemirror/mode/pug/pug.js";
 import "codemirror/mode/css/css.js";
+import "codemirror/mode/javascript/javascript.js";
 import "codemirror/addon/edit/closebrackets.js";
 import "codemirror/addon/comment/comment.js";
 import "codemirror/addon/fold/foldcode.js";

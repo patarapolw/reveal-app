@@ -23,41 +23,38 @@ class User {
   @prop({ required: true }) secret!: string;
 }
 
-const UserModel = getModelForClass(User);
+const UserModel = getModelForClass(User, {schemaOptions: {timestamps: true}});
 
-@pre<Post>("save", async function () {
-  if (!this._id) {
-    const ids = await PostModel.find().select({_id: 1});
-    let outputId = uss.generate(pinyin(this.title, {
-      keepRest: true, toneToNumber: true
-    }));
-
-    while (outputId) {
-      if (!ids.map((el) => el._id).includes(outputId)) {
-        break;
-      } else {
-        const m = / (\d+)$/.exec(outputId);
-        let i = 1;
-
-        if (m) {
-          i = parseInt(m[1]) + 1;
-        }
-
-        outputId = `${outputId.replace(/ (\d+)$/, "")} (${i})`;
-      }
-    }
-
-    this._id = outputId || uuid4();
-  }
-})
 class Post {
   @prop() _id!: string;
-  @prop({ required: true, unique: true }) title!: string;
+  @prop({ required: true }) title!: string;
   @prop() date?: Date;
   @prop({ default: [] }) tag!: string[];
+  @prop() hidden?: boolean;
+  @prop() type?: string;  // 'reveal'
   @prop({ required: true }) content!: string;
 
-  async findByQ(q: string, offset: number = 0, limit: number | null = 10, sort?: ISortOptions<Post>) {
+  static async getSafeId(title?: string) {
+    const ids = (await PostModel.find().select({_id: 1})).map((el) => el._id);
+    let outputId = title ? uss.generate(pinyin(title, {
+      keepRest: true, toneToNumber: true
+    })) : "";
+
+    while (ids.includes(outputId)) {
+      const m = / \((\d+)\)$/.exec(outputId);
+      let i = 1;
+
+      if (m) {
+        i = parseInt(m[1]) + 1;
+      }
+
+      outputId = `${outputId.replace(/ \((\d+)\)$/, "")} (${i})`;
+    }
+
+    return outputId || uuid4();
+  }
+
+  static async findByQ(q: string, offset: number = 0, limit: number | null = 10, sort?: ISortOptions<Post>) {
     const parser = new QParser<Post>(q, {
       anyOf: new Set(["title", "tag"]),
       isString: new Set(["title", "tag"]),
@@ -81,8 +78,7 @@ class Post {
   }
 }
 
-const PostModel = getModelForClass(Post);
-PostModel.findByQ = new Post().findByQ;
+const PostModel = getModelForClass(Post, {schemaOptions: {timestamps: true}});
 
 @pre<Card>("save", function () {
   const { front, back } = this;
@@ -95,7 +91,7 @@ class Card {
   @prop({ default: [] }) tag!: string[];
 }
 
-const CardModel = getModelForClass(Card);
+const CardModel = getModelForClass(Card, {schemaOptions: {timestamps: true}});
 
 @index({ user: 1, card: 1 }, { unique: true })
 class Quiz {
@@ -110,66 +106,7 @@ class Quiz {
   };
 }
 
-const QuizModel = getModelForClass(Quiz);
-
-@pre<Reveal>("save", async function () {
-  if (!this._id) {
-    const ids = await RevealModel.find().select({_id: 1});
-    let outputId = uss.generate(pinyin(this.title, {
-      keepRest: true, toneToNumber: true
-    }));
-
-    while (outputId) {
-      if (!ids.map((el) => el._id).includes(outputId)) {
-        break;
-      } else {
-        const m = / (\d+)$/.exec(outputId);
-        let i = 1;
-
-        if (m) {
-          i = parseInt(m[1]) + 1;
-        }
-
-        outputId = `${outputId.replace(/ (\d+)$/, "")} (${i})`;
-      }
-    }
-
-    this._id = outputId || uuid4();
-  }
-})
-class Reveal {
-  @prop() _id!: string;
-  @prop({ required: true, unique: true }) title!: string;
-  @prop() date?: Date;
-  @prop({ default: [] }) tag!: string[];
-  @prop({ required: true }) content!: string;
-
-  async findByQ(q: string, offset: number = 0, limit: number | null = 10, sort?: ISortOptions<Reveal>) {
-    const parser = new QParser<Reveal>(q, {
-      anyOf: new Set(["title", "tag"]),
-      isString: new Set(["title", "tag"]),
-      isDate: new Set(["date"])
-    });
-
-    const fullCond = parser.getCondFull();
-    sort = fullCond.sortBy || sort;
-
-    const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {date: -1};
-
-    const count = await RevealModel.find(fullCond.cond).countDocuments();
-    let chain = RevealModel.find(fullCond.cond).sort(sorter).skip(offset);
-    if (limit) {
-      chain = chain.limit(limit);
-    }
-
-    const data = await chain;
-
-    return {count, data};
-  }
-}
-
-const RevealModel = getModelForClass(Reveal);
-RevealModel.findByQ = new Reveal().findByQ;
+const QuizModel = getModelForClass(Quiz, {schemaOptions: {timestamps: true}});
 
 export default class Database {
   public currentUser?: DocumentType<User>;
@@ -178,8 +115,7 @@ export default class Database {
     user: UserModel,
     post: PostModel,
     card: CardModel,
-    quiz: QuizModel,
-    reveal: RevealModel
+    quiz: QuizModel
   };
 
   constructor(private mongoUri: string) { }

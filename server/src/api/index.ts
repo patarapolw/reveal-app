@@ -2,7 +2,6 @@ import { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import postRouter from "./post";
-import revealRouter from "./reveal";
 
 const apiRouter = Router();
 
@@ -16,6 +15,5 @@ apiRouter.use(cors({
 }));
 
 apiRouter.use("/post", postRouter);
-apiRouter.use("/reveal", revealRouter);
 
 export default apiRouter;

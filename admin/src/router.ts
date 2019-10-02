@@ -6,16 +6,14 @@ Vue.use(Router)
 export default new Router({
   mode: "history",
   routes: [
+    {path: "/", redirect: "/post/edit"},
     {
-      path: "/blog/edit",
-      alias: [
-        "/"
-      ],
-      component: () => import(/* webpackChunkName: "BlogEdit" */ './views/BlogEdit.vue')
+      path: "/post/edit",
+      component: () => import(/* webpackChunkName: "PostEdit" */ './views/PostEdit.vue')
     },
     {
-      path: "/blog/view",
-      component: () => import(/* webpackChunkName: "BlogView" */ './views/BlogView.vue')
+      path: "/post/view",
+      component: () => import(/* webpackChunkName: "PostView" */ './views/PostView.vue')
     },
     {
       path: "/reveal/edit",

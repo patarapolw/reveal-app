@@ -1,7 +1,6 @@
 import "./reveal.scss";
 import matter from "gray-matter";
-import { mdCompile, pugCompile } from "@zhsrs/make-html";
-import CodeMirror from "codemirror";
+import { pugCompile, anyCompile } from "@zhsrs/make-html";
 
 declare const revealCDN: string;
 declare const Reveal: any;
@@ -9,30 +8,26 @@ declare const Reveal: any;
 (async () => {
   const _id = new URL(location.href).searchParams.get("_id");
   if (_id) {
-    let {title, content} = await (await fetch(`/api/reveal/${_id}`, {
+    let {title, content} = await (await fetch(`/api/post/${_id}`, {
       method: "POST"
     })).json();
 
-    let lang = "markdown";
-    let trueCode = content;
+    const m = matter(content);
+
+    const {lang} = anyCompile(m.content);
+    let trueCode = m.content;
 
     if (content.startsWith("//")) {
       const lines = content.split("\n");
-      const newLang = lines[0].split(" ")[1];
-      if (Object.keys(CodeMirror.modes).includes(newLang)) {
-        lang = newLang;
-      }
       trueCode = lines.slice(1).join("\n");
     }
 
-    const m = matter(trueCode);
-
-    const slides = m.content.split(/^---$/gm).map((slideGroup) => {
+    const slides = trueCode.split(/^---$/gm).map((slideGroup) => {
       return slideGroup.split(/^--$/gm).map((s) => {
-        if (lang === "pug" || s.trimLeft().startsWith("// pug")) {
+        if (lang === "pug") {
           return pugCompile(s);
         } else {
-          return mdCompile(s);
+          return anyCompile(s).html;
         }
       })
     });

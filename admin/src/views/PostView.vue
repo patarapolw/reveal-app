@@ -23,8 +23,7 @@ v-container.d-flex.flex-column.pa-0
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { g } from "../util";
 import matter from "gray-matter";
-import CodeMirror from "codemirror";
-import { mdCompile, pugCompile } from "@zhsrs/make-html";
+import { anyCompile } from "@zhsrs/make-html";
 
 @Component
 export default class BlogView extends Vue {
@@ -33,6 +32,7 @@ export default class BlogView extends Vue {
   private headers = [
     {text: "_id", value: "_id", width: 250},
     {text: "Title", value: "title"},
+    {text: "Type", value: "type", width: 150},
     {text: "Date", value: "date", width: 200},
     {text: "Tags", value: "tag", width: 200}
   ]
@@ -67,7 +67,7 @@ export default class BlogView extends Vue {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          q: q || "",
+          q: [q || "", "-type=reveal"].join(" "),
           offset: page ? (parseInt(page as string) - 1) * perPage : 0,
           limit: perPage,
           sort: sortBy ? {
@@ -94,23 +94,8 @@ export default class BlogView extends Vue {
 
   preview(raw: string): string {
     const {content} = matter(raw);
-    let lang = "markdown";
-    let trueCode = content.split("===")[0];
-
-    if (content.startsWith("//")) {
-      const lines = content.split("\n");
-      const newLang = lines[0].split(" ")[1];
-      if (Object.keys(CodeMirror.modes).includes(newLang)) {
-        lang = newLang;
-      }
-      trueCode = lines.slice(1).join("\n");
-    }
-
-    if (lang === "pug") {
-      return pugCompile(trueCode);
-    } else {
-      return mdCompile(trueCode);
-    }
+    const {html} = anyCompile(content.split("===")[0]);
+    return html;
   }
 
   @Watch("g.q")

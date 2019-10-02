@@ -21,8 +21,7 @@ v-container.h-100.d-flex.flex-column.pa-0
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import CodeMirror from "codemirror";
-import { mdCompile, pugCompile } from "@zhsrs/make-html";
+import { anyCompile } from "@zhsrs/make-html";
 import matter from "gray-matter";
 import { adminConfig } from "../util";
 import { toDate } from "valid-moment";
@@ -68,6 +67,8 @@ export default class BlogEdit extends Vue {
     this.date = null;
     this.tag = [];
     this.cmOptions.mode.base = "markdown";
+
+    this.hasPreview = false;
 
     this.$router.push({query: undefined});
   }
@@ -132,30 +133,16 @@ export default class BlogEdit extends Vue {
   onCmCodeChange(newCode: string) {
     this.code = newCode;
     const {data, content} = matter(newCode);
-
-    let lang = "markdown";
-    let trueCode = content;
     
     this._id = data._id || null;
     this.title = data.title || null;
     this.date = toDate(data.date || "") || null;
     this.tag = Array.isArray(data.tag) ? data.tag : [];
 
-    if (content.startsWith("//")) {
-      const lines = content.split("\n");
-      const newLang = lines[0].split(" ")[1];
-      if (Object.keys(CodeMirror.modes).includes(newLang)) {
-        lang = newLang;
-      }
-      trueCode = lines.slice(1).join("\n");
-    }
+    const {lang, html} = anyCompile(content);
 
     this.cmOptions.mode.base = lang;
-    if (lang === "pug") {
-      this.html = pugCompile(trueCode);
-    } else {
-      this.html = mdCompile(trueCode);
-    }
+    this.html = html;
   }
 }
 </script>

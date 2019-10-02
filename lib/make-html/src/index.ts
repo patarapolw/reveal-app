@@ -2,6 +2,7 @@ import showdown from "showdown";
 import h from "hyperscript";
 import { HyperPug } from "hyperpug";
 import { slideExt, simpleTableExt, toExt, speakExt } from "./extensions";
+import CodeMirror from "codemirror";
 
 export class Markdown {
   private converter: showdown.Converter;
@@ -36,3 +37,33 @@ const pugFilters = {
 const hp = new HyperPug(pugFilters);
 
 export const pugCompile = (s: string) => hp.parse(s);
+
+export function anyCompile(s: string): {html: string, lang: string} {
+  let lang = "markdown";
+
+  if (s.startsWith("//")) {
+    const lines = s.split("\n");
+    let newLang = lines[0].split(" ")[1];
+
+    if (newLang === "json") {
+      newLang = "application/json";
+    }
+
+    if (Object.keys(CodeMirror.modes).includes(newLang) || Object.keys(CodeMirror.mimeModes).includes(newLang)) {
+      lang = newLang;
+    }
+    s = lines.slice(1).join("\n");
+  }
+
+  let html: string;
+
+  if (lang === "pug") {
+    html = pugCompile(s);
+  } else if (lang === "markdown") {
+    html = mdCompile(s);
+  } else {
+    html = h("pre", s).outerHTML;
+  }
+
+  return {html, lang};
+}
