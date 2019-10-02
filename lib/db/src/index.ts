@@ -64,7 +64,7 @@ class Post {
     const fullCond = parser.getCondFull();
     sort = fullCond.sortBy || sort;
 
-    const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {date: -1};
+    const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {updatedAt: -1};
 
     const count = await PostModel.find(fullCond.cond).countDocuments();
     let chain = PostModel.find(fullCond.cond).sort(sorter).skip(offset);

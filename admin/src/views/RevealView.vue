@@ -100,7 +100,10 @@ export default class BlogView extends Vue {
   @Watch("g.q")
   loadQ() {
     if (g.q.endsWith("\n")) {
-      this.$router.push({query: {q: g.q.trim()}});
+      this.$router.push({query: {
+        ...this.$route.query,
+        q: g.q.trim()
+      }});
     }
   }
 
@@ -112,6 +115,7 @@ export default class BlogView extends Vue {
     itemsPerPage: number;
   }) {
     this.$router.push({query: {
+      ...this.$route.query,
       page: options.page ? options.page.toString() : undefined,
       sortBy: options.sortBy[0],
       desc: options.sortDesc[0] ? options.sortDesc[0].toString() : undefined,

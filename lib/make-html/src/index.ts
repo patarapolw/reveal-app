@@ -2,7 +2,6 @@ import showdown from "showdown";
 import h from "hyperscript";
 import { HyperPug } from "hyperpug";
 import { slideExt, simpleTableExt, toExt, speakExt } from "./extensions";
-import CodeMirror from "codemirror";
 
 export class Markdown {
   private converter: showdown.Converter;
@@ -13,7 +12,6 @@ export class Markdown {
       extensions: [simpleTableExt, slideExt, toExt, speakExt]
     });
     this.converter.setFlavor("github");
-    console.log(this.converter);
   }
 
   md2html(md: string) {
@@ -38,7 +36,10 @@ const hp = new HyperPug(pugFilters);
 
 export const pugCompile = (s: string) => hp.parse(s);
 
-export function anyCompile(s: string): {html: string, lang: string} {
+export function anyCompile(
+  s: string,
+  langs: string[] = ["markdown", "pug", "application/json", "yaml"]
+): {html: string, lang: string} {
   let lang = "markdown";
 
   if (s.startsWith("//")) {
@@ -49,7 +50,7 @@ export function anyCompile(s: string): {html: string, lang: string} {
       newLang = "application/json";
     }
 
-    if (Object.keys(CodeMirror.modes).includes(newLang) || Object.keys(CodeMirror.mimeModes).includes(newLang)) {
+    if (langs.includes(newLang)) {
       lang = newLang;
     }
     s = lines.slice(1).join("\n");

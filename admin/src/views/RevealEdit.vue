@@ -2,13 +2,13 @@
 v-container.h-100.d-flex.flex-column.pa-0
   div(style="position: fixed; z-index: 100; width: calc(100% - 256px); padding: 10px")
     v-toolbar.elevation-1
-      v-toolbar-title {{title ? `${title} ${date ? `(${date.toDateString()})` : ""}` : ""}}
+      v-toolbar-title {{headers.title ? `${headers.title} ${date ? `(${date.toDateString()})` : ""}` : ""}}
       v-spacer
       v-toolbar-items
         v-btn(text @click="hasPreview = !hasPreview") {{hasPreview ? "Hide Presentation" : "Show Presentation"}}
         v-btn(text :disabled="!code" @click="reset") New
         v-btn(text :disabled="!trueId" @click="load") Reload
-        v-btn(text :disabled="!title" @click="save") Save
+        v-btn(text :disabled="!headers.title" @click="save") Save
   v-row.w-100(style="overflow-y: scroll; margin-top: 75px")
     v-col(:class="hasPreview ? 'col-6 pr-0' : 'col-12'")
       codemirror.h-100(ref="cm" v-model="code" :options="cmOptions" @input="onCmCodeChange")
@@ -36,10 +36,7 @@ export default class BlogEdit extends Vue {
     }
   }
 
-  private _id: string | null  = null;
-  private title: string | null = null;
-  private date: Date | null = null;
-  private tag: string[] = [];
+  private headers: any = {};
 
   private iframeUrl = "about:blank";
   private hasPreview = adminConfig.blog.preview;
@@ -53,6 +50,16 @@ export default class BlogEdit extends Vue {
   mounted() {
     this.load();
     this.codemirror.setSize("100%", "100%");
+  }
+
+  get date() {
+    if (typeof this.headers.date === "string") {
+      return toDate(this.headers.date);
+    } else if (this.headers.date instanceof Date) {
+      return this.headers.date;
+    }
+
+    return null;
   }
 
   @Watch("hasPreview")
@@ -82,13 +89,11 @@ export default class BlogEdit extends Vue {
   }
 
   reset() {
-    this._id = null;
     this.code = "";
     this.iframeUrl = "about:blank";
-    this.title = null;
-    this.date = null;
-    this.tag = [];
     this.cmOptions.mode.base = "markdown";
+
+    Vue.set(this, "headers", {});
 
     this.$router.push({query: undefined});
   }
@@ -105,15 +110,11 @@ export default class BlogEdit extends Vue {
       const url = `/api/post/${_id}`;
 
       try {
-        const {_id, content, title, date, tag} = await (await fetch(url, {
+        const {content} = await (await fetch(url, {
           method: "POST"
         })).json();
 
-        this._id = _id;
-        this.title = title;
         this.code = content;
-        this.date = toDate(date) || null;
-        this.tag = tag;
       } catch(e) {
         this.snackbar.text = e.toString();
         this.snackbar.color = "error",
@@ -132,17 +133,13 @@ export default class BlogEdit extends Vue {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
+          ...this.headers,
           _id: this.$route.query._id,
-          newId: this._id,
+          newId: this.headers._id,
           content: this.code,
-          title: this.title,
-          date: this.date,
-          tag: this.tag,
           type: "reveal"
         })
       })).json();
-
-      this._id = _id;
 
       this.$router.push({query: {_id}});
 
@@ -160,10 +157,7 @@ export default class BlogEdit extends Vue {
     this.code = newCode;
     const {data, content} = matter(newCode);
     
-    this._id = data._id || null;
-    this.title = data.title || null;
-    this.date = toDate(data.date || "") || null;
-    this.tag = Array.isArray(data.tag) ? data.tag : [];
+    Vue.set(this, "headers", data);
 
     const {lang} = anyCompile(content);
 

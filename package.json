@@ -1,0 +1,29 @@
+{
+  "name": "zhsrs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "admin:admin": "cd admin && npm run serve",
+    "admin:web": "cd web && npm run serve:silent",
+    "web:dev": "cd web && npm run server",
+    "dev:server": "cd server && npm run dev",
+    "admin": "concurrently 'npm:admin:*' 'npm:dev:server'",
+    "web": "concurrently 'npm:web:dev' 'npm:dev:server'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patarapolw/zhsrs.git"
+  },
+  "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/patarapolw/zhsrs/issues"
+  },
+  "homepage": "https://github.com/patarapolw/zhsrs#readme"
+}

@@ -12,10 +12,8 @@
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
   "license": "MIT",
   "dependencies": {
-    "@types/codemirror": "0.0.77",
     "@types/hyperscript": "0.0.3",
     "@types/showdown": "^1.9.3",
-    "codemirror": "^5.49.0",
     "hyperpug": "^0.2.0",
     "hyperscript": "^2.0.2",
     "indented-filter": "^0.1.1",

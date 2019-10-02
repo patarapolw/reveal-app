@@ -16,6 +16,12 @@ import "codemirror/addon/edit/closebrackets.js";
 import "codemirror/addon/comment/comment.js";
 import "codemirror/addon/fold/foldcode.js";
 import "codemirror/addon/fold/foldgutter.js";
+import "codemirror/addon/fold/brace-fold.js";
+import "codemirror/addon/fold/indent-fold.js";
+import "codemirror/addon/fold/comment-fold.js";
+import "codemirror/addon/fold/markdown-fold.js";
+import "codemirror/addon/fold/foldgutter.css";
+import "codemirror/addon/scroll/scrollpastend.js";
 
 const { adminConfig } = require("./util");
 require(`codemirror/theme/${adminConfig.codemirror.theme}.css`);
@@ -27,8 +33,19 @@ Vue.use(VueCodemirror, {
     ...adminConfig.codemirror,
     lineNumbers: true,
     autoCloseBrackets: true,
-    gutters: true,
-    lineWrapping: true
+    gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+    lineWrapping: true,
+    tabSize: 2,
+    extraKeys: {
+      'Cmd-/' : 'toggleComment',
+      'Ctrl-/' : 'toggleComment',
+      Tab: (cm: CodeMirror.Editor) => {
+        const spaces = Array(cm.getOption("indentUnit")! + 1).join(" ");
+        cm.getDoc().replaceSelection(spaces);
+      }
+    },
+    foldGutter: true,
+    scrollPastEnd: true
   }
 })
 
