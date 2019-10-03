@@ -120,7 +120,6 @@ function init(computedMd: any) {
       dependencies: [
           { src: `${revealCDN}plugin/markdown/marked.js` },
           { src: `${revealCDN}plugin/markdown/markdown.js` },
-          { src: `${revealCDN}plugin/notes/notes.js`, async: true },
           { src: `${revealCDN}plugin/highlight/highlight.js`, async: true }
       ]
   });

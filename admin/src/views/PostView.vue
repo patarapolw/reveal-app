@@ -3,8 +3,16 @@ v-container.d-flex.flex-column.pa-0
   div(style="position: fixed; z-index: 100; width: calc(100% - 256px); padding: 10px")
     v-toolbar.elevation-1
       v-spacer
+      v-btn(text @click="load") Reload
       v-toolbar-items
-        v-btn(text :disabled="selected.length === 0" @click="batchEdit") Batch Edit
+        v-menu(offset-y)
+          template(v-slot:activator="{on}")
+            v-btn(text :disabled="selected.length === 0" v-on="on") Batch Edit
+          v-list
+            v-list-item(@click.stop="(isEditTagsDialog = true) && (isAddTags = true)")
+              v-list-item-title Add tags
+            v-list-item(@click.stop="(isEditTagsDialog = true) && (isAddTags = false)")
+              v-list-item-title Remove tags
         v-btn(text :disabled="selected.length === 0" @click="remove") Remove
   v-row(style="overflow-y: scroll; margin-top: 75px")
     v-data-table.elevation-1.click-table(v-model="selected" :headers="headers" :items="items" :single-select="false" 
@@ -17,6 +25,15 @@ v-container.d-flex.flex-column.pa-0
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
+  v-dialog(v-model="isEditTagsDialog" width=500)
+    v-card
+      v-card-title {{isAddTags ? 'Add tags' : 'Remove tags'}}
+      v-card-text
+        v-text-field(placeholder="Separated by spaces" v-model="newTags")
+      v-card-actions
+        .flex-grow-1
+        v-btn(color="primary" text @click="editTags() && (isEditTagsDialog = false)") Save
+        v-btn(color="primary" text @click="isEditTagsDialog = false") Close
 </template>
 
 <script lang="ts">
@@ -49,6 +66,10 @@ export default class BlogView extends Vue {
   private isLoading = false;
   private count = 0;
 
+  private isEditTagsDialog = false;
+  private isAddTags = true;
+  private newTags = "";
+
   mounted() {
     this.load();
   }
@@ -67,7 +88,7 @@ export default class BlogView extends Vue {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          q: [q || "", "-type=reveal"].join(" "),
+          q,
           offset: page ? (parseInt(page as string) - 1) * perPage : 0,
           limit: perPage,
           sort: sortBy ? {
@@ -94,7 +115,7 @@ export default class BlogView extends Vue {
 
   preview(raw: string): string {
     const {content} = matter(raw);
-    const {html} = anyCompile(content.split("===")[0]);
+    const {html} = anyCompile(content.split(/\r?\n(===|---)\r?\n/)[0]);
     return html;
   }
 
@@ -103,7 +124,7 @@ export default class BlogView extends Vue {
     if (g.q.endsWith("\n")) {
       this.$router.push({query: {
         ...this.$route.query,
-        q: g.q.trim()
+        q: g.q.trim() || undefined
       }});
     }
   }
@@ -124,8 +145,36 @@ export default class BlogView extends Vue {
     }});
   }
 
-  batchEdit() {
+  async editTags() {
+    if (this.isAddTags) {
+      await fetch("/api/post/tags", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ids: this.selected,
+          tags: this.newTags.split(" ")
+        })
+      });
+    } else {
+      await fetch("/api/post/tags", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ids: this.selected,
+          tags: this.newTags.split(" ")
+        })
+      });
+    }
+    this.load();
+  }
 
+  @Watch("isEditTagsDialog")
+  onEditTagsDialogChanged() {
+    this.newTags = "";
   }
 
   remove() {

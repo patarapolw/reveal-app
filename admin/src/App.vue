@@ -5,7 +5,7 @@ v-app
       v-list-group(:value="$route.path.startsWith('/post')")
         template(v-slot:activator)
           v-list-item-avatar
-            v-icon mdi-home
+            v-icon mdi-content-copy
           v-list-item-content
             v-list-item-title Posts
         v-list-item(to="/post/edit")
@@ -39,22 +39,6 @@ v-app
             v-icon mdi-account-search
           v-list-item-content
             v-list-item-title Quiz results
-      v-list-group(:value="$route.path.startsWith('/reveal')")
-        template(v-slot:activator)
-          v-list-item-avatar
-            v-icon mdi-play-box-outline
-          v-list-item-content
-            v-list-item-title Presentations
-        v-list-item(to="/reveal/edit")
-          v-list-item-avatar.ml-3
-              v-icon mdi-plus
-          v-list-item-content
-            v-list-item-title New entry
-        v-list-item(to="/reveal/view")
-          v-list-item-avatar.ml-3
-              v-icon mdi-view-list
-          v-list-item-content
-            v-list-item-title View entries
       v-list-item(href="https://github.com/patarapolw/zhsrs" target="_blank")
         v-list-item-avatar
           v-icon mdi-github-circle
@@ -83,11 +67,18 @@ import { g } from "./util";
 export default class App extends Vue {
   private isDrawer: boolean = this.$vuetify.breakpoint.lgAndUp;
   private g = g;
-  private tags = ["tag1", "tag2"];
+
+  mounted() {
+    Array.from(document.getElementsByTagName("input")).forEach((input) => {
+      input.spellcheck = false;
+      input.autocapitalize = "off";
+      input.autocomplete = "off";
+    });
+  }
 
   @Watch("$route.path")
   onRouteChanged(to: string) {
-    this.g.q = "";
+    this.g.q = this.$route.query.q as string || "";
   }
 
   onSearchKeydown(evt: KeyboardEvent) {
@@ -134,6 +125,12 @@ pre {
     &:hover {
       background-color: rgb(219, 236, 241) !important;
     }
+  }
+}
+
+.CodeMirror {
+  .cm-tab {
+    background: gray;
   }
 }
 </style>

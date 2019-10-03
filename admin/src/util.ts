@@ -1,6 +1,3 @@
-import CodeMirror from "codemirror";
-import { pugCompile, mdCompile } from '@zhsrs/make-html';
-
 export const adminConfig = ADMIN_CONFIG;
 
 export const g: {
@@ -11,4 +8,8 @@ export const g: {
 
 export function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');  // $& means the whole matched string
+}
+
+export function clone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
 }

@@ -1,14 +1,15 @@
 import { Router } from "express";
 import { g } from "../config";
-import { unUndefined } from "../util";
+import { unUndefined, clone } from "../util";
 import { toDate } from "valid-moment";
+import matter from "gray-matter";
 
 const postRouter = Router();
 
 postRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort } = req.body;
-    const r = await g.db!.cols.post.findByQ(q, offset, limit, sort);
+    const r = await g.db!.cols.post.findByQ(q || "", offset, limit, sort);
 
     return res.json(r);
   } catch(e) {
@@ -18,7 +19,9 @@ postRouter.post("/", async (req, res, next) => {
 
 postRouter.put("/", async (req, res, next) => {
   try {
-    const { _id, newId, title, date, tag, content, hidden, type } = req.body;
+    let { _id, newId, title, date, tag, content, hidden, type } = req.body;
+    const m = matter(content);
+    content = matter.stringify(m.content, clone({...m.data, title, date, tag, hidden, type}));
     const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content, hidden, type });
     let outputId = _id || newId || undefined;
 
@@ -57,5 +60,29 @@ postRouter.delete("/:id", async (req, res, next) => {
     return next(e);
   }
 });
+
+postRouter.put("/tags", async (req, res, next) => {
+  try {
+    const {ids, tags} = req.body;
+    await g.db!.cols.post.updateMany({_id: {$in: ids}}, {$addToSet: {
+      tag: {$each: tags}
+    }});
+    return res.sendStatus(201);
+  } catch(e) {
+    return next(e);
+  }
+});
+
+postRouter.delete("/tags", async (req, res, next) => {
+  try {
+    const {ids, tags} = req.body;
+    await g.db!.cols.post.updateMany({_id: {$in: ids}}, {$pull: {
+      tag: {$in: tags}
+    }});
+    return res.sendStatus(201);
+  } catch(e) {
+    return next(e);
+  }
+})
 
 export default postRouter;

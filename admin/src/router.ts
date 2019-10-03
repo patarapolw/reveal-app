@@ -14,14 +14,6 @@ export default new Router({
     {
       path: "/post/view",
       component: () => import(/* webpackChunkName: "PostView" */ './views/PostView.vue')
-    },
-    {
-      path: "/reveal/edit",
-      component: () => import(/* webpackChunkName: "RevealEdit" */ './views/RevealEdit.vue')
-    },
-    {
-      path: "/reveal/view",
-      component: () => import(/* webpackChunkName: "RevealView" */ './views/RevealView.vue')
-    },
+    }
   ]
 })

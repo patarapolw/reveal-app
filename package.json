@@ -8,12 +8,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "admin:admin": "cd admin && npm run serve",
-    "admin:web": "cd web && npm run serve:silent",
-    "web:dev": "cd web && npm run server",
-    "dev:server": "cd server && npm run dev",
-    "admin": "concurrently 'npm:admin:*' 'npm:dev:server'",
-    "web": "concurrently 'npm:web:dev' 'npm:dev:server'",
+    "admin:start": "pm2 start scripts/admin.dev.yaml && pm2 logs admin",
+    "admin:stop": "pm2 delete scripts/admin.dev.yaml",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -41,14 +41,14 @@ class Post {
     })) : "";
 
     while (ids.includes(outputId)) {
-      const m = / \((\d+)\)$/.exec(outputId);
+      const m = /-(\d+)$/.exec(outputId);
       let i = 1;
 
       if (m) {
         i = parseInt(m[1]) + 1;
       }
 
-      outputId = `${outputId.replace(/ \((\d+)\)$/, "")} (${i})`;
+      outputId = `${outputId.replace(/-(\d+)$/, "")}-${i}`;
     }
 
     return outputId || uuid4();
