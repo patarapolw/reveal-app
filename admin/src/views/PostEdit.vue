@@ -6,15 +6,16 @@ v-container.h-100.d-flex.flex-column.pa-0
       v-spacer
       v-toolbar-items
         v-btn(text @click="hasPreview = !hasPreview") {{hasPreview ? "Hide Preview" : "Show Preview"}}
+        v-btn(text :disabled="!fileUrl" @click="openInExternal") Open in external
         v-btn(text @click="reset") New
         v-btn(text @click="load") Reload
         v-btn(text :disabled="!headers.title || !isEdited" @click="save") Save
   v-row(style="overflow-y: scroll; margin-top: 75px")
     v-col(:class="hasPreview ? 'col-6 pr-0' : 'col-12'")
       codemirror.h-100(ref="cm" v-model="code" :options="cmOptions" @input="onCmCodeChange")
-    v-col(v-if="hasPreview" ref="previewHolder" style="width: 50%")
-      v-card.h-100.pa-3(v-if="headers.type !== 'reveal'" v-html="html")
-      iframe(v-else ref="iframe" frameborder="0" :src="iframeUrl")
+    v-col(v-show="hasPreview" ref="previewHolder" style="width: 50%")
+      v-card.h-100.pa-3(v-if="!isReveal" v-html="html")
+      iframe(v-show="isReveal" ref="iframe" frameborder="0" :src="iframeUrl")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
@@ -65,6 +66,10 @@ export default class BlogEdit extends Vue {
     return (this.$refs.cm as any).codemirror;
   }
 
+  get isReveal() {
+    return this.headers.type === "reveal";
+  }
+
   get date() {
     if (typeof this.headers.date === "string") {
       return toDate(this.headers.date);
@@ -89,27 +94,63 @@ export default class BlogEdit extends Vue {
 
   @Watch("hasPreview")
   resizeIFrame() {
-    this.$nextTick(() => {
-      const iframeHolder = this.$refs.previewHolder as HTMLDivElement;
-      const iframe = this.$refs.iframe as HTMLIFrameElement;
-      if (iframe && iframeHolder) {
-        const sqWidth = Math.min(iframeHolder.clientHeight, iframeHolder.clientWidth) * 0.95;
-        iframe.style.maxHeight = `${sqWidth}px`;
-        iframe.style.maxWidth = `${sqWidth}px`;
-      }
-    })
+    if (this.isReveal) {
+      this.$nextTick(() => {
+        this.iframeUrl = this.fileUrl || "about:blank";
+        const iframeHolder = this.$refs.previewHolder as HTMLDivElement;
+        const iframe = this.$refs.iframe as HTMLIFrameElement;
+        if (iframe && iframeHolder) {
+          const sqWidth = Math.min(iframeHolder.clientHeight, iframeHolder.clientWidth) * 0.95;
+          iframe.style.maxHeight = `${sqWidth}px`;
+          iframe.style.maxWidth = `${sqWidth}px`;
+        }
+      });
+    }
   }
 
   reloadIFrame() {
-    const {_id} = this.$route.query
-    if (_id) {
-      this.iframeUrl = `/web/reveal.html?_id=${_id}`;
-      const iframe = this.$refs.iframe as HTMLIFrameElement;
-      if (iframe) {
-        iframe.contentWindow!.location.reload();
+    if (this.isReveal) {
+      const {_id} = this.$route.query
+      if (_id) {
+        const iframe = this.$refs.iframe as HTMLIFrameElement;
+        if (iframe && iframe.contentWindow) {
+          const url = new URL(iframe.contentWindow.location.href);
+          if (url.searchParams.get("_id") === _id) {
+            iframe.contentWindow.location.reload();
+          } else {
+            this.iframeUrl = `/web/reveal.html?_id=${_id}`;
+          }
+        }
+      } else {
+        this.iframeUrl = "about:blank";
       }
-    } else {
-      this.iframeUrl = "about:blank";
+    }
+  }
+
+  get fileUrl() {
+    const {_id} = this.$route.query;
+    if (!_id) {
+      return null;
+    }
+
+    if (this.isReveal) {
+      const iframe = this.$refs.iframe as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        const url = new URL(iframe.contentWindow.location.href);
+        if (url.searchParams.get("_id") === _id) {
+          return url.href;
+        }
+        
+        return new URL(`/web/reveal.html?_id=${_id}`, location.origin).href;
+      }
+    }
+
+    return new URL(`/web/#post?_id=${_id}`, location.origin).href;
+  }
+
+  openInExternal() {
+    if (this.fileUrl) {
+      open(this.fileUrl, "_blank");
     }
   }
 

@@ -116,6 +116,8 @@ function init(computedMd: any) {
   // - https://github.com/hakimel/reveal.js#configuration
   // - https://github.com/hakimel/reveal.js#dependencies
   Reveal.initialize({
+      hash: true,
+      history: true,
       ...computedMd.data,
       dependencies: [
           { src: `${revealCDN}plugin/markdown/marked.js` },
