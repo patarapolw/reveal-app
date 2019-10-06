@@ -43,14 +43,14 @@ export default class App extends Vue {
     this.items = this.toNested.toNested(raw.data);
   }
 
-  get _id() {
-    const {_id} = this.$route.query;
-    return _id as string;
+  get id() {
+    const {id} = this.$route.query;
+    return id as string;
   }
 
-  @Watch("_id")
+  @Watch("id")
   async onRouteChanged() {
-    const {content} = await (await fetch(`/resources/${this._id}`)).json() || {};
+    const {content} = await (await fetch(`/resources/${this.id}`)).json() || {};
     if (content) {
       this.html = anyCompile((content || "").split(/\r?\n===\r?\n/)[0]).html;
     }

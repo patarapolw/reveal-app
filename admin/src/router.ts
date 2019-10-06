@@ -3,7 +3,7 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   mode: "history",
   routes: [
     {path: "/", redirect: "/post/edit"},
@@ -17,3 +17,18 @@ export default new Router({
     }
   ]
 })
+
+document.addEventListener("mouseover", (ev) => {
+  const { target } = ev;
+  if (target instanceof HTMLAnchorElement && target.matches(".v-link")) {
+    if (!target.href) {
+      const to = target.getAttribute("to")
+      if (to) {
+        target.href = router.resolve("/web/#" + to).href;
+        target.target = "_blank"
+      }
+    }
+  }
+});
+
+export default router;

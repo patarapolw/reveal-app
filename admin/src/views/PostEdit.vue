@@ -114,15 +114,15 @@ export default class BlogEdit extends Vue {
 
   reloadIFrame() {
     if (this.isReveal) {
-      const {_id} = this.$route.query
-      if (_id) {
+      const {id} = this.$route.query
+      if (id) {
         const iframe = this.$refs.iframe as HTMLIFrameElement;
         if (iframe && iframe.contentWindow) {
           const url = new URL(iframe.contentWindow.location.href);
-          if (url.searchParams.get("_id") === _id) {
+          if (url.searchParams.get("id") === id) {
             iframe.contentWindow.location.reload();
           } else {
-            this.iframeUrl = `/web/reveal.html?_id=${_id}`;
+            this.iframeUrl = `/web/reveal.html?id=${id}`;
           }
         }
       } else {
@@ -132,8 +132,8 @@ export default class BlogEdit extends Vue {
   }
 
   get fileUrl() {
-    const {_id} = this.$route.query;
-    if (!_id) {
+    const {id} = this.$route.query;
+    if (!id) {
       return null;
     }
 
@@ -141,15 +141,15 @@ export default class BlogEdit extends Vue {
       const iframe = this.$refs.iframe as HTMLIFrameElement;
       if (iframe && iframe.contentWindow) {
         const url = new URL(iframe.contentWindow.location.href);
-        if (url.searchParams.get("_id") === _id) {
+        if (url.searchParams.get("id") === id) {
           return url.href;
         }
         
-        return new URL(`/web/reveal.html?_id=${_id}`, location.origin).href;
+        return new URL(`/web/reveal.html?id=${id}`, location.origin).href;
       }
     }
 
-    return new URL(`/web/#post?_id=${_id}`, location.origin).href;
+    return new URL(`/web/#/post?id=${id}`, location.origin).href;
   }
 
   openInExternal() {
@@ -160,9 +160,9 @@ export default class BlogEdit extends Vue {
 
   @Watch("$route", {deep: true})
   async load() {
-    const {_id} = this.$route.query
-    if (_id) {
-      const url = `/api/post/${_id}`;
+    const {id} = this.$route.query
+    if (id) {
+      const url = `/api/post/${id}`;
 
       try {
         const {title, date, tag, hidden, type, content} = await (await fetch(url, {
@@ -201,13 +201,13 @@ export default class BlogEdit extends Vue {
         },
         body: JSON.stringify({
           ...this.headers,
-          _id: this.$route.query._id,
+          _id: this.$route.query.id,
           newId: this.headers._id,
           content: this.code
         })
       })).json();
 
-      this.$router.push({query: {_id}});
+      this.$router.push({query: {id: _id}});
 
       this.snackbar.text = "Saved";
       this.snackbar.color = "cyan darken-2";

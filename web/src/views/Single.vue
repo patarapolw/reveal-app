@@ -1,10 +1,10 @@
 <template lang="pug">
 v-row
   v-col.col-lg-8.col-md-12
-    div(v-if="_id")
-      post(:is-teaser="false" :_id="_id", :content="content")
+    div(v-if="id")
+      post(:is-teaser="false" :id="id", :content="content")
       .ma-3
-        vue-disqus(:shortname="disqus" :identifier="_id")
+        vue-disqus(:shortname="disqus" :identifier="id")
     div(v-else="")
       empty
 </template>
@@ -25,17 +25,18 @@ export default class Search extends Vue {
   private content: string = "";
   private disqus: string = webConfig.disqus;
 
-  @Watch("_id")
+  @Watch("id")
   async mounted() {
-    const {content} = await (await fetch(`/api/post/${this._id}`, {
+    const {content} = await (await fetch(`/api/post/${this.id}`, {
       method: "POST"
     })).json();
     this.content = content;
   }
 
-  get _id() {
+  get id() {
+    const {id} = this.$route.query;
     const {name} = this.$route.params;
-    return name as string || "";
+    return (id || name || "") as string;
   }
 }
 </script>

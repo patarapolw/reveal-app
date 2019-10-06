@@ -22,7 +22,7 @@ import { anyCompile } from "@zhsrs/make-html";
 
 @Component
 export default class Post extends Vue {
-  @Prop() _id!: string;
+  @Prop() id!: string;
   @Prop({default: false}) isTeaser!: boolean;
   @Prop() content!: string;
 
@@ -63,7 +63,7 @@ export default class Post extends Vue {
     const m = this.moment;
     if (m) {
       return `/post/${m.format("YYYY")}/${m.format("MM")}/${
-        this._id
+        this.id
         .replace(/^.*\//, "")
         .replace(/\.[^.]+$/, "")}`;
     }

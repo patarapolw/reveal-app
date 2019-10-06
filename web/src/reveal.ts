@@ -6,7 +6,7 @@ declare const revealCDN: string;
 declare const Reveal: any;
 
 (async () => {
-  const _id = new URL(location.href).searchParams.get("_id");
+  const _id = new URL(location.href).searchParams.get("id");
   if (_id) {
     let {title, content} = await (await fetch(`/api/post/${_id}`, {
       method: "POST"

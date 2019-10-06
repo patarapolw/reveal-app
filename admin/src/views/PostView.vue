@@ -182,7 +182,7 @@ export default class BlogView extends Vue {
   }
 
   clickRow(data: any) {
-    const url = this.$router.resolve({path: "/post/edit", query: {_id: data._id}});
+    const url = this.$router.resolve({path: "/post/edit", query: {id: data._id}});
     open(url.href, "_blank");
   }
 }

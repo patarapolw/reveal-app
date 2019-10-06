@@ -1,10 +1,10 @@
 <template lang="pug">
 v-container.pa-0(style="height: 100%")
   v-row(style="height: 100%")
-    v-col.col-lg-4.h-100(fixed style="overflow-y: scroll;" :class="_id ? 'hidden-md-and-down' : 'col-md-12'")
+    v-col.col-lg-4.h-100(fixed style="overflow-y: scroll;" :class="id ? 'hidden-md-and-down' : 'col-md-12'")
       v-treeview(@update:active="onSelected" :open="open" :items="items" item-key="data._id" open-on-click activatable return-object)
     v-divider(vertical)
-    v-col.h-100(v-if="_id")
+    v-col.h-100(v-if="id")
       iframe(:src="iframeUrl" frameborder=0 style="width: 100%; height: 100%")
 </template>
 
@@ -36,14 +36,14 @@ export default class Reveal extends Vue {
     this.items = this.toNested.toNested(raw.data);
   }
 
-  get _id() {
-    const {_id} = this.$route.query;
-    return _id as string;
+  get id() {
+    const {id} = this.$route.query;
+    return id as string;
   }
 
   get iframeUrl() {
-    if (this._id) {
-      return `reveal.html?_id=${this._id}`;
+    if (this.id) {
+      return `reveal.html?id=${this.id}`;
     } else {
       return "about:blank";
     }
@@ -51,7 +51,7 @@ export default class Reveal extends Vue {
 
   async onSelected(v: ITreeViewItem[]) {
     if (v.length > 0) {
-      this.$router.push({query: {_id: v[0].data._id}});
+      this.$router.push({query: {id: v[0].data._id}});
     }
   }
 }
