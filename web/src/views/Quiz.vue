@@ -51,7 +51,10 @@ export default class Reveal extends Vue {
 
   async onSelected(v: ITreeViewItem[]) {
     if (v.length > 0) {
-      this.$router.push({query: {id: v[0].data._id}});
+      const {data} = v[0];
+      if (data) {
+        this.$router.push({query: {id: data._id}});
+      }
     }
   }
 }

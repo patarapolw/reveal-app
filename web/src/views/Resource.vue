@@ -58,11 +58,16 @@ export default class App extends Vue {
 
   async onSelected(v: ITreeViewItem[]) {
     if (v.length > 0) {
-      this.html = anyCompile(
-        matter((await (await fetch(`/api/post/${v[0].data._id}`, {
-          method: "POST"
-        })).json()).content).content
-      ).html;
+      const {data} = v[0];
+      if (data) {
+        this.html = anyCompile(
+          matter((await (await fetch(`/api/post/${data._id}`, {
+            method: "POST"
+          })).json()).content).content
+        ).html;;
+      } else {
+        this.html = "";
+      }
     }
   }
 }
