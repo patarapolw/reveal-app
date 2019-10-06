@@ -34,6 +34,7 @@ class Post {
   @prop({ default: [] }) tag!: string[];
   @prop() hidden?: boolean;
   @prop() type?: string;  // 'reveal'
+  @prop() deck?: string;
   @prop({ required: true }) content!: string;
 
   static async getSafeId(title?: string) {

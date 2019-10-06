@@ -15,6 +15,7 @@ declare class Post {
     tag: string[];
     hidden?: boolean;
     type?: string;
+    deck?: string;
     content: string;
     static getSafeId(title?: string): Promise<string>;
     static findByQ(q: string, offset?: number, limit?: number | null, sort?: ISortOptions<Post>, fields?: string[] | IProjection): Promise<{

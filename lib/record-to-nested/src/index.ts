@@ -1,7 +1,7 @@
 export interface ITreeViewItem {
   name: string;
   path: string;
-  data: Record<string, any>;
+  data?: Record<string, any>;
   children?: ITreeViewItem[];
 }
 
@@ -21,8 +21,10 @@ export default class ToNested {
   }
 
   toNested(records: Record<string, any>[]): ITreeViewItem[] {
-    const decks: string[] = Array.from(new Set(records.map((r) => {
-      return r[this.options.key] || "";
+    const decks: string[] = Array.from(new Set(records.filter((r) => {
+      return r[this.options.key];
+    }).map((r) => {
+      return r[this.options.key];
     }))).sort();
 
     const deckWithSubDecks: string[] = [];
@@ -41,8 +43,20 @@ export default class ToNested {
 
     deckWithSubDecks.forEach((d) => {
       const deck = d.split("/");
-      this.recurseParseData(records, output, deck);
+      this.recurseParseData(records.filter((r) => {
+        return r[this.options.key];
+      }), output, deck);
     });
+
+    for (const r of records.filter((r) => {
+      return !r[this.options.key];
+    })) {
+      output.push({
+        name: r.title,
+        path: `${r._id}`,
+        data: r
+      })
+    }
 
     return output;
   }
@@ -70,13 +84,19 @@ export default class ToNested {
     if (doLoop && _depth === deck.length - 1) {
       const path = deck.join("/");
 
-      for (const d of data.filter((d) => (d[this.options.key] || "") === path)) {
-        output.push({
-          name: deck[_depth] || d.title,
-          path: path || d.title,
-          data: d
-        });
-      }
+      const ds = data.filter((d) => d[this.options.key] === path);
+
+      output.push({
+        name: deck[_depth],
+        path: path,
+        children: ds.map((d) => {
+          return {
+            name: d.title,
+            path: `${path}/${d._id}`,
+            data: d
+          };
+        })
+      });
     }
   }
 }

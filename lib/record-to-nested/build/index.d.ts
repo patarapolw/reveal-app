@@ -1,7 +1,7 @@
 export interface ITreeViewItem {
     name: string;
     path: string;
-    data: Record<string, any>;
+    data?: Record<string, any>;
     children?: ITreeViewItem[];
 }
 export interface IToNestedOptions {
