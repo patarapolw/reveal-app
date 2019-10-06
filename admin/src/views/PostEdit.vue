@@ -9,7 +9,7 @@ v-container.h-100.d-flex.flex-column.pa-0
         v-btn(text :disabled="!fileUrl" @click="openInExternal") Open in external
         v-btn(text @click="reset") New
         v-btn(text @click="load") Reload
-        v-btn(text :disabled="!headers.title || !isEdited" @click="save") Save
+        v-btn(text :disabled="!canSave" @click="save") Save
   v-row(style="overflow-y: scroll; margin-top: 75px")
     v-col(:class="hasPreview ? 'col-6 pr-0' : 'col-12'")
       codemirror.h-100(ref="cm" v-model="code" :options="cmOptions" @input="onCmCodeChange")
@@ -68,6 +68,10 @@ export default class BlogEdit extends Vue {
 
   get isReveal() {
     return this.headers.type === "reveal";
+  }
+
+  get canSave() {
+    return this.headers.title && this.isEdited;
   }
 
   get date() {
@@ -185,7 +189,7 @@ export default class BlogEdit extends Vue {
   }
 
   async save() {
-    if (!this.headers.title) {
+    if (!this.canSave) {
       return;
     }
 
