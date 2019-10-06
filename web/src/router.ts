@@ -1,24 +1,76 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
 
 Vue.use(Router)
 
-export default new Router({
-  mode: "history",
+const router = new Router({
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: Home
-    },
-    {
-      path: '/about',
-      name: 'about',
+      path: '/resources',
+      name: 'resources',
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
+      component: () => import(/* webpackChunkName: "resource" */ './views/Resource.vue')
+    },
+    {
+      path: '/quiz',
+      name: 'quiz',
+      component: () => import(/* webpackChunkName: "quiz" */ './views/Quiz.vue')
+    },
+    {
+      path: "/blog",
+      alias: "/",
+      component: () => import(/* webpackChunkName: "blog" */ './views/Blog.vue'),
+      children: [
+        {
+          path: "",
+          name: "blog_home",
+        },
+        {
+          path: "tag/:tag",
+          name: "blog_tag",
+        },
+      ]
+    },
+    {
+      path: "/post",
+      component: () => import(/* webpackChunkName: "single" */ './views/Single.vue'),
+      children: [
+        {
+          path: "",
+          name: "blog_p_query"
+        },
+        {
+          path: ":y/:mo/:name",
+          name: "blog_p_date"
+        }
+      ]
     }
-  ]
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else if (to.hash) {
+      return {
+        selector: to.hash
+      };
+    } else {
+      return { x: 0, y: 0 }
+    }
+  }
 })
+
+document.addEventListener("mouseover", (ev) => {
+  const { target } = ev;
+  if (target instanceof HTMLAnchorElement && target.matches(".v-link")) {
+    if (!target.href) {
+      const to = target.getAttribute("to")
+      if (to) {
+        target.href = router.resolve(to).href;
+      }
+    }
+  }
+});
+
+export default router;

@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve:silent": "vue-cli-service serve --silent",
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "serve:silent": "vue-cli-service serve --silent"
   },
   "dependencies": {
+    "@mdi/font": "^3.6.95",
     "@types/codemirror": "0.0.77",
     "@types/jquery": "^3.3.31",
     "@types/node": "^12.7.9",
@@ -15,10 +16,16 @@
     "codemirror": "^5.49.0",
     "core-js": "^2.6.5",
     "gray-matter": "^4.0.2",
+    "moment": "^2.24.0",
+    "q2filter": "file:../lib/q2filter",
+    "record-to-nested": "file:../lib/record-to-nested",
+    "roboto-fontface": "*",
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",
+    "vue-disqus": "^3.0.5",
     "vue-property-decorator": "^8.1.0",
-    "vue-router": "^3.0.3"
+    "vue-router": "^3.0.3",
+    "vuetify": "^2.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.11.0",
@@ -27,6 +34,8 @@
     "node-sass": "^4.9.0",
     "sass-loader": "^7.1.0",
     "typescript": "^3.4.3",
+    "vue-cli-plugin-pug": "^1.0.7",
+    "vue-cli-plugin-vuetify": "^0.6.3",
     "vue-template-compiler": "^2.6.10"
   }
 }

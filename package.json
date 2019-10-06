@@ -10,8 +10,21 @@
   "scripts": {
     "admin:start": "pm2 start scripts/admin.dev.yaml && pm2 logs admin",
     "admin:stop": "pm2 delete scripts/admin.dev.yaml",
+    "web:start": "pm2 start scripts/web.dev.yaml && pm2 logs web",
+    "web:stop": "pm2 delete scripts/web.dev.yaml",
+    "server:build": "cd server && npm run build",
+    "web:build": "cd web && npm run build",
+    "build:only": "npm run server:build && npm run web:build",
+    "server:install": "cd server && npm install && npm install --only=dev && npm run build && npm prune",
+    "web:install": "cd web && npm install && npm install --only=dev && npm run build && npm prune",
+    "heroku-postbuild": "npm run server:install && npm run web:install",
+    "start": "cd server && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "cacheDirectories": [
+    "web/node_modules",
+    "server/node_modules"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/patarapolw/zhsrs.git"

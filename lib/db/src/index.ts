@@ -8,6 +8,8 @@ import UrlSafeString from "url-safe-string";
 import pinyin from "chinese-to-pinyin";
 import QParser, { ISortOptions } from "q2filter";
 
+interface IProjection {[k: string]: 1 | 0};
+
 const uss = new UrlSafeString({
   regexRemovePattern: /((?!([a-z0-9.])).)/gi
 });
@@ -54,7 +56,13 @@ class Post {
     return outputId || uuid4();
   }
 
-  static async findByQ(q: string, offset: number = 0, limit: number | null = 10, sort?: ISortOptions<Post>) {
+  static async findByQ(
+    q: string,
+    offset: number = 0,
+    limit: number | null = 10,
+    sort?: ISortOptions<Post>,
+    fields?: string[] | IProjection
+  ) {
     const parser = new QParser<Post>(q, {
       anyOf: new Set(["title", "tag"]),
       isString: new Set(["title", "tag"]),
@@ -67,7 +75,23 @@ class Post {
     const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {updatedAt: -1};
 
     const count = await PostModel.find(fullCond.cond).countDocuments();
-    let chain = PostModel.find(fullCond.cond).sort(sorter).skip(offset);
+    let chain = PostModel.find(fullCond.cond);
+
+    if (fields) {
+      let proj: IProjection = {};
+      if (Array.isArray(fields)) {
+        for (const f of fields) {
+          proj[f] = 1;
+        }
+      } else {
+        proj = fields;
+      }
+
+      chain = chain.select(proj);
+    }
+
+    chain = chain.sort(sorter).skip(offset);
+
     if (limit) {
       chain = chain.limit(limit);
     }

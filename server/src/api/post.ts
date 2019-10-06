@@ -8,8 +8,8 @@ const postRouter = Router();
 
 postRouter.post("/", async (req, res, next) => {
   try {
-    let { q, offset, limit, sort } = req.body;
-    const r = await g.db!.cols.post.findByQ(q || "", offset, limit, sort);
+    let { q, offset, limit, sort, fields } = req.body;
+    const r = await g.db!.cols.post.findByQ(q || "", offset, limit, sort, fields);
 
     return res.json(r);
   } catch(e) {
@@ -19,10 +19,10 @@ postRouter.post("/", async (req, res, next) => {
 
 postRouter.put("/", async (req, res, next) => {
   try {
-    let { _id, newId, title, date, tag, content, hidden, type } = req.body;
+    let { _id, newId, title, date, tag, content, hidden, type, deck } = req.body;
     const m = matter(content);
-    content = matter.stringify(m.content, clone({...m.data, title, date, tag, hidden, type}));
-    const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content, hidden, type });
+    content = matter.stringify(m.content, clone({...m.data, title, date, tag, hidden, type, deck}));
+    const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content, hidden, type, deck });
     let outputId = _id || newId || undefined;
 
     if (!_id) {

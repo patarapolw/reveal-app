@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "outDir": "./build",
-    "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
@@ -12,24 +11,16 @@
     "sourceMap": false,
     "noImplicitReturns": true,
     "noImplicitAny": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "declaration": true,
     "declarationMap": true,
-    "lib": ["es2015", "es7", "es6", "dom", "es2017"],
-    "baseUrl": ".",
-    "typeRoots": [
-      "@types"
-    ],
-    "types": [
-      "node"
-    ],
-    "paths": {
-      "*": ["../@types/*"]
-    }
+    "lib": ["es2015", "es7", "es6", "dom", "es2017"]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*"
   ],
   "exclude": [
     "node_modules"

@@ -1,0 +1,10 @@
+# Run with PM2
+apps:
+  - name: server
+    script: npm
+    args: run dev
+    cwd: server
+  - name: web
+    script: npm
+    args: run serve
+    cwd: web
