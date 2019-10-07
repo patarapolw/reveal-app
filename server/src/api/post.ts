@@ -69,9 +69,7 @@ postRouter.delete("/:id", async (req, res, next) => {
 postRouter.put("/tags", async (req, res, next) => {
   try {
     const {ids, tags} = req.body;
-    await g.db.tables.post.updateMany({_id: {$in: ids}}, {$addToSet: {
-      tag: {$each: tags}
-    }});
+    await g.db.tables.post.addTags(ids, tags);
     return res.sendStatus(201);
   } catch(e) {
     return next(e);
@@ -81,9 +79,7 @@ postRouter.put("/tags", async (req, res, next) => {
 postRouter.delete("/tags", async (req, res, next) => {
   try {
     const {ids, tags} = req.body;
-    await g.db.tables.post.updateMany({_id: {$in: ids}}, {$pull: {
-      tag: {$in: tags}
-    }});
+    await g.db.tables.post.removeTags(ids, tags);
     return res.sendStatus(201);
   } catch(e) {
     return next(e);

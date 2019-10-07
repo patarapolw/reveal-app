@@ -57,6 +57,8 @@ export default class OnlineDb extends AbstractDb {
             deleteById: (id: string) => Promise<void>;
             findById: (id: string) => Promise<DocumentType<Post> | null>;
             updateMany: (cond: any, set: any) => Promise<void>;
+            addTags: (ids: string[], tags: string[]) => Promise<void>;
+            removeTags: (ids: string[], tags: string[]) => Promise<void>;
         };
         user: import("@typegoose/typegoose").ReturnModelType<typeof User, unknown>;
         card: import("@typegoose/typegoose").ReturnModelType<typeof Card, unknown>;

@@ -150,6 +150,16 @@ export default class OnlineDb extends AbstractDb {
       },
       updateMany: async (cond: any, set: any) => {
         await PostModel.updateMany(cond, set);
+      },
+      addTags: async (ids: string[], tags: string[]) => {
+        await PostModel.updateMany({_id: {$in: ids}}, {$addToSet: {
+          tag: {$each: tags}
+        }});
+      },
+      removeTags: async (ids: string[], tags: string[]) => {
+        await PostModel.updateMany({_id: {$in: ids}}, {$pull: {
+          tag: {$in: tags}
+        }});
       }
     },
     user: UserModel,

@@ -35,6 +35,8 @@ export default abstract class AbstractDb {
             findById(id: string): Promise<IPost | null>;
             deleteById(id: string): Promise<void>;
             updateMany(cond: any, op: any): Promise<void>;
+            addTags(ids: string[], tags: string[]): Promise<void>;
+            removeTags(ids: string[], tags: string[]): Promise<void>;
         };
     };
 }
