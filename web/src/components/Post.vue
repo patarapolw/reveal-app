@@ -62,10 +62,7 @@ export default class Post extends Vue {
   get to() {
     const m = this.moment;
     if (m) {
-      return `/post/${m.format("YYYY")}/${m.format("MM")}/${
-        this.id
-        .replace(/^.*\//, "")
-        .replace(/\.[^.]+$/, "")}`;
+      return `/post/${m.format("YYYY")}/${m.format("MM")}/${this.id}`;
     }
 
     return "";
@@ -74,9 +71,9 @@ export default class Post extends Vue {
   get html(): string {
     const { content } = this.matter;
     if (this.isTeaser) {
-      return anyCompile(content.split(/\r?\n(===|---)\r?\n/)[0]).html
+      return anyCompile(content.split(/\r?\n===\r?\n/)[0]).html
     } else {
-      return anyCompile(content).html;
+      return anyCompile(content.replace(/\r?\n===\r?\n/, "")).html;
     }
   }
 }

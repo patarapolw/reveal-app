@@ -228,11 +228,16 @@ export default class BlogEdit extends Vue {
     try {
       const {data, content} = matter(newCode);
       Vue.set(this, "headers", data);
-      const {lang, html} = anyCompile(content);
+      const {lang, html} = anyCompile(content.replace(/\r?\n===\r?\n/, ""));
 
       this.cmOptions.mode.base = lang;
       this.html = html;
     } catch(e) {}
+  }
+
+  @Watch("headers.title")
+  onTitleChange() {
+    document.getElementsByTagName("title")[0].innerText = `${this.headers.title || "New Entry"} | ZhSrs - Admin panel`;
   }
 }
 </script>

@@ -25,11 +25,15 @@ export default class Search extends Vue {
   private content: string = "";
   private disqus: string = webConfig.disqus;
 
+  private title: string = "";
+
   @Watch("id")
   async mounted() {
-    const {content} = await (await fetch(`/api/post/${this.id}`, {
+    const {title, content} = await (await fetch(`/api/post/${this.id}`, {
       method: "POST"
     })).json();
+
+    this.title = title;
     this.content = content;
   }
 
@@ -37,6 +41,13 @@ export default class Search extends Vue {
     const {id} = this.$route.query;
     const {name} = this.$route.params;
     return (id || name || "") as string;
+  }
+
+  @Watch("title")
+  onTitleChange() {
+    if (this.title) {
+      document.getElementsByTagName("title")[0].innerHTML = `${this.title} | 中文 SRS`;
+    }
   }
 }
 </script>

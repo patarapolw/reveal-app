@@ -3,7 +3,7 @@ v-row
   v-col.col-lg-8.col-md-12
     h1.tag(v-if="$route.tag") {{$route.tag}}
     div(v-if="posts && posts.length > 0")
-      post(v-for="p in posts" :_id="p._id" :is-teaser="true" :key="p._id" :content="p.content")
+      post(v-for="p in posts" :id="p._id" :is-teaser="true" :key="p._id" :content="p.content")
       v-pagination(v-model="page" :length="Math.ceil(count / perPage)")
     div(v-else-if="posts")
       empty

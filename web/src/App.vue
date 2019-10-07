@@ -63,6 +63,7 @@ export default class App extends Vue {
 .v-link {
   color: blue;
   cursor: pointer;
+  text-decoration: none !important;
 }
 
 img {

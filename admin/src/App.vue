@@ -39,6 +39,11 @@ v-app
             v-icon mdi-account-search
           v-list-item-content
             v-list-item-title Quiz results
+      v-list-item(href="http://localhost:9000" target="_blank")
+        v-list-item-avatar
+          v-icon mdi-open-in-new
+        v-list-item-content
+          v-list-item-title Open website
       v-list-item(href="https://github.com/patarapolw/zhsrs" target="_blank")
         v-list-item-avatar
           v-icon mdi-github-circle
@@ -93,6 +98,7 @@ export default class App extends Vue {
 .v-link {
   color: blue;
   cursor: pointer;
+  text-decoration: none !important;
 }
 
 img {
