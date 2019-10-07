@@ -1,5 +1,4 @@
 export const config = CONFIG;
-export const adminConfig = ADMIN_CONFIG;
 
 export const g: {
   q: string;

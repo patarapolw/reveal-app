@@ -23,14 +23,15 @@ import "codemirror/addon/fold/markdown-fold.js";
 import "codemirror/addon/fold/foldgutter.css";
 import "codemirror/addon/scroll/scrollpastend.js";
 
-const { adminConfig } = require("./util");
-require(`codemirror/theme/${adminConfig.codemirror.theme}.css`);
+const dotProp = require("dot-prop");
+const { config } = require("./util");
+require(`codemirror/theme/${dotProp.get(config, "admin.codemirror.theme") || "monokai"}.css`);
 
 Vue.config.productionTip = false
 
 Vue.use(VueCodemirror, {
   options: {
-    ...adminConfig.codemirror,
+    ...(dotProp.get(config, "admin.codemirror") || {}),
     lineNumbers: true,
     autoCloseBrackets: true,
     gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],

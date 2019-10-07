@@ -5,7 +5,7 @@ v-container.h-100.d-flex.flex-column.pa-0
       v-toolbar-title {{headers.title ? `${headers.title} ${date ? `(${date.toDateString()})` : ""}` : ""}}
       v-spacer
       v-toolbar-items
-        v-btn(text @click="hasPreview = !hasPreview") {{hasPreview ? "Hide Preview" : "Show Preview"}}
+        v-btn(text @click="onTogglePreviewClicked") {{hasPreview ? "Hide Preview" : "Show Preview"}}
         v-btn(text :disabled="!fileUrl" @click="openInExternal") Open in external
         v-btn(text @click="reset") New
         v-btn(text @click="load") Reload
@@ -23,10 +23,26 @@ v-container.h-100.d-flex.flex-column.pa-0
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { anyCompile } from "@zhsrs/make-html";
 import matter from "gray-matter";
-import { adminConfig, clone, config } from "../util";
+import { clone } from "../util";
 import { toDate } from "valid-moment";
+import { g, config } from '../util';
+import dotProp from "dot-prop";
+import MakeHTML from "@reveal-app/make-html";
+
+let makeHTML: MakeHTML;
+
+try {
+  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+    [slideExt, speakExt]
+  );
+} catch(e) {
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  );
+}
 
 @Component
 export default class BlogEdit extends Vue {
@@ -41,7 +57,7 @@ export default class BlogEdit extends Vue {
   private headers: any = {};
 
   private html = "";
-  private hasPreview = adminConfig.blog.preview;
+  private hasPreview = false;
   private iframeUrl = "about:blank";
 
   private isEdited = false;
@@ -97,8 +113,14 @@ export default class BlogEdit extends Vue {
 
     this.$router.push({query: undefined});
   }
+  
+  onTogglePreviewClicked() {
+    this.$router.push({query: {
+      ...this.$route.query,
+      preview: (!this.hasPreview).toString()
+    }});
+  }
 
-  @Watch("hasPreview")
   resizeIFrame() {
     const cursor = this.codemirror.getDoc().getCursor();
 
@@ -168,7 +190,17 @@ export default class BlogEdit extends Vue {
 
   @Watch("$route", {deep: true})
   async load() {
-    const {id} = this.$route.query
+    const {id, preview} = this.$route.query;
+
+    if (preview) {
+      try {
+        this.hasPreview = JSON.parse(preview as string);
+      } catch(e) {
+        this.hasPreview = false;
+      }
+      this.resizeIFrame();
+    }
+
     if (id) {
       const url = `/api/post/${id}`;
 
@@ -236,7 +268,7 @@ export default class BlogEdit extends Vue {
     try {
       const {data, content} = matter(newCode);
       Vue.set(this, "headers", data);
-      const {lang, html} = anyCompile(content.replace(/\r?\n===\r?\n/, ""));
+      const {lang, html} = makeHTML.compile(content.replace(/\r?\n===\r?\n/, ""));
 
       this.cmOptions.mode.base = lang;
       this.html = html;
@@ -245,7 +277,8 @@ export default class BlogEdit extends Vue {
 
   @Watch("headers.title")
   onTitleChange() {
-    document.getElementsByTagName("title")[0].innerText = `${this.headers.title || "New Entry"} | ${config.title} - Admin panel`;
+    document.getElementsByTagName("title")[0].innerText = 
+    `${this.headers.title || "New Entry"} | ${process.env.VUE_APP_TITLE} - Admin panel`;
   }
 }
 </script>

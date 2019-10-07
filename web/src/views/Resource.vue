@@ -12,9 +12,24 @@ v-container.pa-0(style="height: 100%")
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { normalizeArray, config } from "../util";
-import { anyCompile } from "@zhsrs/make-html";
 import ToNested, { ITreeViewItem } from "record-to-nested";
 import matter from "gray-matter";
+import dotProp from "dot-prop";
+import MakeHTML from "@reveal-app/make-html";
+
+let makeHTML: MakeHTML;
+
+try {
+  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+    [slideExt, speakExt]
+  );
+} catch(e) {
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  );
+}
 
 @Component
 export default class App extends Vue {
@@ -61,7 +76,7 @@ export default class App extends Vue {
       const data = await (await fetch(`/api/post/${this.id}`, {
           method: "POST"
         })).json();
-      this.html = anyCompile(
+      this.html = makeHTML.compile(
         matter(data.content).content
       ).html;
     } else {
@@ -84,7 +99,8 @@ export default class App extends Vue {
 
   @Watch("title")
   onTitleChange() {
-    document.getElementsByTagName("title")[0].innerText = `${this.title ? `${this.title} - ` : ""}Quiz | ${config.title}`;
+    document.getElementsByTagName("title")[0].innerText = 
+    `${this.title ? `${this.title} - ` : ""}Quiz | ${process.env.VUE_APP_TITLE}`;
   }
 }
 </script>

@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
-import Database from "@zhsrs/db";
+import Database from "@reveal-app/abstract-db";
+import OnlineDb from "@reveal-app/online-db";
 
 dotenv.config({
     path: "../.env"
@@ -7,5 +8,7 @@ dotenv.config({
 dotenv.config();
 
 export const g: {
-    db?: Database;
-} = {};
+    db: Database;
+} = {
+    db: new OnlineDb(process.env.MONGO_URI!)
+};

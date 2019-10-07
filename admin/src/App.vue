@@ -44,19 +44,24 @@ v-app
           v-icon mdi-open-in-new
         v-list-item-content
           v-list-item-title Open website
-      v-list-item(href="https://github.com/patarapolw/zhsrs" target="_blank")
+      v-list-item(href="https://github.com/patarapolw/reveal-app" target="_blank")
         v-list-item-avatar
           v-icon mdi-github-circle
         v-list-item-content
+          v-list-item-title GitHub
+      v-list-item(v-if="about" to="/about")
+        v-list-item-avatar
+          v-icon mdi-information-variant
+        v-list-item-content
           v-list-item-title About
-    template(v-slot:append)
+    template(v-if="hint" v-slot:append)
       v-card
         v-card-title Hint
-        v-card-text You don't have to deploy 'admin' to remote server.
+        v-card-text {{hint}}
   v-app-bar(:clipped-left="isDrawer" app color="green" dark)
     v-toolbar-title.mr-3
       v-app-bar-nav-icon.mr-2(@click.stop="isDrawer = !isDrawer")
-      span.hidden-md-and-down(style="cursor: pointer;" @click="$router.push('/')") 中文 SRS
+      span.hidden-md-and-down(style="cursor: pointer;" @click="$router.push('/')") {{banner}}
     .flex-grow-1
     v-text-field.col-lg-4(flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"
       v-model="g.q" @keydown="onSearchKeydown")
@@ -66,12 +71,18 @@ v-app
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { g } from "./util";
+import { g, config } from "./util";
+import dotProp from "dot-prop";
 
 @Component
 export default class App extends Vue {
   private isDrawer: boolean = this.$vuetify.breakpoint.lgAndUp;
   private g = g;
+
+  private title = process.env.VUE_APP_TITLE;
+  private banner = config.banner;
+  private about = process.env.VUE_APP_ABOUT;
+  private hint?: string = dotProp.get(config, "admin.hint");
 
   mounted() {
     Array.from(document.getElementsByTagName("input")).forEach((input) => {

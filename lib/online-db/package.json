@@ -1,5 +1,5 @@
 {
-  "name": "@zhsrs/db",
+  "name": "@reveal-app/online-db",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
@@ -12,6 +12,7 @@
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
   "license": "MIT",
   "dependencies": {
+    "@reveal-app/abstract-db": "file:../abstract-db",
     "@typegoose/typegoose": "^6.0.0",
     "@types/fast-json-stable-stringify": "^2.0.0",
     "@types/mongoose": "^5.5.18",

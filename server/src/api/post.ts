@@ -9,7 +9,12 @@ const postRouter = Router();
 postRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort, fields } = req.body;
-    const r = await g.db!.cols.post.findByQ(q || "", offset, limit, sort, fields);
+    const r = await g.db.tables.post.findByQ(q || "", {
+      offset,
+      limit: limit || 10,
+      sort,
+      fields
+    });
 
     return res.json(r);
   } catch(e) {
@@ -26,13 +31,13 @@ postRouter.put("/", async (req, res, next) => {
     let outputId = _id || newId || undefined;
 
     if (!_id) {
-      const p = await g.db!.cols.post.create({
-        _id: await g.db!.cols.post.getSafeId(outputId || title),
+      const p = await g.db.tables.post.create({
+        _id: await g.db.tables.post.getSafeId(outputId || title),
         ...payload
       });
-      outputId = p.id;
+      outputId = p._id;
     } else {
-      await g.db!.cols.post.findByIdAndUpdate(_id, {$set: payload});
+      await g.db.tables.post.updateById(_id, {$set: payload});
     }
     
     return res.json({
@@ -45,7 +50,7 @@ postRouter.put("/", async (req, res, next) => {
 
 postRouter.post("/:id", async (req, res, next) => {
   try {
-    const p = await g.db!.cols.post.findById(req.params.id)
+    const p = await g.db.tables.post.findById(req.params.id)
     return res.json(p);
   } catch(e) {
     return next(e);
@@ -54,7 +59,7 @@ postRouter.post("/:id", async (req, res, next) => {
 
 postRouter.delete("/:id", async (req, res, next) => {
   try {
-    const p = await g.db!.cols.post.findByIdAndDelete(req.params.id)
+    const p = await g.db!.tables.post.deleteById(req.params.id)
     return res.json(p);
   } catch(e) {
     return next(e);
@@ -64,7 +69,7 @@ postRouter.delete("/:id", async (req, res, next) => {
 postRouter.put("/tags", async (req, res, next) => {
   try {
     const {ids, tags} = req.body;
-    await g.db!.cols.post.updateMany({_id: {$in: ids}}, {$addToSet: {
+    await g.db.tables.post.updateMany({_id: {$in: ids}}, {$addToSet: {
       tag: {$each: tags}
     }});
     return res.sendStatus(201);
@@ -76,7 +81,7 @@ postRouter.put("/tags", async (req, res, next) => {
 postRouter.delete("/tags", async (req, res, next) => {
   try {
     const {ids, tags} = req.body;
-    await g.db!.cols.post.updateMany({_id: {$in: ids}}, {$pull: {
+    await g.db.tables.post.updateMany({_id: {$in: ids}}, {$pull: {
       tag: {$in: tags}
     }});
     return res.sendStatus(201);

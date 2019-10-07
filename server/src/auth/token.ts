@@ -4,22 +4,31 @@ import expressJwt from "express-jwt";
 import { Request } from "express";
 import jwt from "jsonwebtoken";
 import { g } from "../config";
+import OnlineDb from "@reveal-app/online-db";
 
-passport.use(new Strategy({
-  usernameField: "email",
-  passwordField: "password"
-}, (email, password, done) => {
-  (async () => {
-    const db = g.db!;
-    const result = await db.login(email, password);
-
-    if (!result || !db.currentUser) {
-      return done(null, false, { message: "No login or password is invalid" });;
+if (process.env.MONGO_URI) {
+  passport.use(new Strategy({
+    usernameField: "email",
+    passwordField: "password"
+  }, (email, password, done) => {
+    if (g.db instanceof OnlineDb) {
+      (async () => {
+        if (g.db instanceof OnlineDb) {
+          const db = g.db!;
+          const result = await db.login(email, password);
+      
+          if (!result || !db.currentUser) {
+            return done(null, false, { message: "No login or password is invalid" });;
+          }
+      
+          return done(null, db.currentUser.id);
+        }
+      })().catch(done);
+    } else {
+      done(null);
     }
-
-    return done(null, db.currentUser.id);
-  })().catch(done);
-}));
+  }));
+}
 
 function getTokenFromHeaders(req: Request) {
   const { headers: { authorization } } = req;

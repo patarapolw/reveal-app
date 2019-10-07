@@ -1,5 +1,5 @@
 {
-  "name": "zhsrs",
+  "name": "reveal-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -27,12 +27,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/patarapolw/zhsrs.git"
+    "url": "git+https://github.com/patarapolw/reveal-app.git"
   },
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/patarapolw/zhsrs/issues"
+    "url": "https://github.com/patarapolw/reveal-app/issues"
   },
-  "homepage": "https://github.com/patarapolw/zhsrs#readme"
+  "homepage": "https://github.com/patarapolw/reveal-app#readme"
 }

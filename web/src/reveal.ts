@@ -1,6 +1,22 @@
 import "./reveal.scss";
 import matter from "gray-matter";
-import { pugCompile, anyCompile } from "@zhsrs/make-html";
+import { config } from './util';
+import dotProp from "dot-prop";
+import MakeHTML from "@reveal-app/make-html";
+
+let makeHTML: MakeHTML;
+
+try {
+  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+    [slideExt, speakExt]
+  );
+} catch(e) {
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  );
+}
 
 declare const revealCDN: string;
 declare const Reveal: any;
@@ -14,7 +30,7 @@ declare const Reveal: any;
 
     const m = matter(content);
 
-    const {lang} = anyCompile(m.content);
+    const {lang} = makeHTML.compile(m.content);
     let trueCode = m.content;
 
     if (content.startsWith("//")) {
@@ -25,9 +41,9 @@ declare const Reveal: any;
     const slides = trueCode.split(/^---$/gm).map((slideGroup) => {
       return slideGroup.split(/^--$/gm).map((s) => {
         if (lang === "pug") {
-          return pugCompile(s);
+          return makeHTML.pug(s);
         } else {
-          return anyCompile(s).html;
+          return makeHTML.compile(s).html;
         }
       })
     });

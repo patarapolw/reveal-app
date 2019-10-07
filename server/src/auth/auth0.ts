@@ -2,7 +2,7 @@ import { Strategy } from "passport-auth0";
 import passport from "passport";
 import "../config";
 
-if (!(process.env.AUTH0_DOMAIN && process.env.DEFAULT_USER)) {
+if (process.env.MONGO_URI && process.env.AUTH0_DOMAIN && !process.env.DEFAULT_USER) {
   const auth0Strategy = new Strategy(
     {
       domain: process.env.AUTH0_DOMAIN!,

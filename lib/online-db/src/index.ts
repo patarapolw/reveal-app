@@ -6,9 +6,8 @@ import stringify from "fast-json-stable-stringify";
 import mongoose from "mongoose";
 import UrlSafeString from "url-safe-string";
 import pinyin from "chinese-to-pinyin";
-import QParser, { ISortOptions } from "q2filter";
-
-interface IProjection {[k: string]: 1 | 0};
+import QParser from "q2filter";
+import AbstractDb, { IPost, IFindByQOptions, IProjection } from "@reveal-app/abstract-db";
 
 const uss = new UrlSafeString({
   regexRemovePattern: /((?!([a-z0-9.])).)/gi
@@ -27,12 +26,11 @@ class User {
 
 const UserModel = getModelForClass(User, {schemaOptions: {timestamps: true}});
 
-class Post {
+class Post implements IPost {
   @prop() _id!: string;
   @prop({ required: true }) title!: string;
   @prop() date?: Date;
   @prop({ default: [] }) tag!: string[];
-  @prop() hidden?: boolean;
   @prop() type?: string;  // 'reveal'
   @prop() deck?: string;
   @prop({ required: true }) content!: string;
@@ -59,10 +57,10 @@ class Post {
 
   static async findByQ(
     q: string,
-    offset: number = 0,
-    limit: number | null = 10,
-    sort?: ISortOptions<Post>,
-    fields?: string[] | IProjection
+    options: IFindByQOptions = {
+      offset: 0,
+      limit: 10
+    }
   ) {
     const parser = new QParser<Post>(q, {
       anyOf: new Set(["title", "tag"]),
@@ -71,30 +69,30 @@ class Post {
     });
 
     const fullCond = parser.getCondFull();
-    sort = fullCond.sortBy || sort;
+    const sort = fullCond.sortBy || options.sort;
 
     const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {updatedAt: -1};
 
     const count = await PostModel.find(fullCond.cond).countDocuments();
     let chain = PostModel.find(fullCond.cond);
 
-    if (fields) {
+    if (options.fields) {
       let proj: IProjection = {};
-      if (Array.isArray(fields)) {
-        for (const f of fields) {
+      if (Array.isArray(options.fields)) {
+        for (const f of options.fields) {
           proj[f] = 1;
         }
       } else {
-        proj = fields;
+        proj = options.fields;
       }
 
       chain = chain.select(proj);
     }
 
-    chain = chain.sort(sorter).skip(offset);
+    chain = chain.sort(sorter).skip(options.offset);
 
-    if (limit) {
-      chain = chain.limit(limit);
+    if (options.limit) {
+      chain = chain.limit(options.limit);
     }
 
     const data = await chain;
@@ -133,17 +131,35 @@ class Quiz {
 
 const QuizModel = getModelForClass(Quiz, {schemaOptions: {timestamps: true}});
 
-export default class Database {
+export default class OnlineDb extends AbstractDb {
   public currentUser?: DocumentType<User>;
 
-  public cols = {
+  public tables = {
+    post: {
+      findByQ: PostModel.findByQ,
+      create: PostModel.create,
+      getSafeId: PostModel.getSafeId,
+      updateById: async (id: string, set: any) => {
+        await PostModel.findByIdAndUpdate(id, set);
+      },
+      deleteById: async (id: string) => {
+        await PostModel.findByIdAndDelete(id);
+      },
+      findById: async (id: string) => {
+        return await PostModel.findById(id);
+      },
+      updateMany: async (cond: any, set: any) => {
+        await PostModel.updateMany(cond, set);
+      }
+    },
     user: UserModel,
-    post: PostModel,
     card: CardModel,
     quiz: QuizModel
-  };
+  }
 
-  constructor(private mongoUri: string) { }
+  constructor(private mongoUri: string) { 
+    super();
+  }
 
   public async connect() {
     mongoose.set('useCreateIndex', true);

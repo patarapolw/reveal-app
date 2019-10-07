@@ -38,9 +38,24 @@ v-container.d-flex.flex-column.pa-0
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { g, config } from "../util";
 import matter from "gray-matter";
-import { anyCompile } from "@zhsrs/make-html";
+import { g, config } from '../util';
+import dotProp from "dot-prop";
+import MakeHTML from "@reveal-app/make-html";
+
+let makeHTML: MakeHTML;
+
+try {
+  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+    [slideExt, speakExt]
+  );
+} catch(e) {
+  makeHTML = new MakeHTML(dotProp.get(
+    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  );
+}
 
 @Component
 export default class BlogView extends Vue {
@@ -72,7 +87,7 @@ export default class BlogView extends Vue {
 
   mounted() {
     this.load();
-    document.getElementsByTagName("title")[0].innerText = `${config.title} - Admin panel`;
+    document.getElementsByTagName("title")[0].innerText = `${process.env.VUE_APP_TITLE} - Admin panel`;
   }
 
   @Watch("$route", {deep: true})
@@ -116,7 +131,7 @@ export default class BlogView extends Vue {
 
   preview(raw: string): string {
     const {content} = matter(raw);
-    const {html} = anyCompile(content.split(/\r?\n(===|---)\r?\n/)[0]);
+    const {html} = makeHTML.compile(content.split(/\r?\n(===|---)\r?\n/)[0]);
     return html;
   }
 

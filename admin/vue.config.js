@@ -1,15 +1,25 @@
 const fs = require("fs");
+const showdown = require("showdown");
 
-const globalConfig = JSON.parse(fs.readFileSync("../config.json", "utf-8"));
-process.env.VUE_APP_TITLE = globalConfig.title;
+let config = {};
+
+try {
+  if (!process.env.VUE_APP_ELECTRON) {
+    config = JSON.parse(fs.readFileSync("../config.json", "utf-8"));
+    const md = new showdown.Converter();
+    md.setFlavor("github");
+    process.env.VUE_APP_ABOUT = config.about ? md.makeHtml(fs.readFileSync(`../${config.about}`, "utf-8")) : "";
+  }
+} catch(e) {};
+
+process.env.VUE_APP_TITLE = config.title;
 
 module.exports = {
   chainWebpack: (webpackConfig) => {
     webpackConfig.plugin("define").tap((args) => {
       args[0] = {
         ...args[0],
-        CONFIG: JSON.stringify(globalConfig),
-        ADMIN_CONFIG: fs.readFileSync("config.json", "utf-8")
+        CONFIG: JSON.stringify(config),
       }
       return args;
     });
