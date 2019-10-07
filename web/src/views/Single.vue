@@ -14,7 +14,7 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import Post from "@/components/Post.vue";
 import Empty from "@/components/Empty.vue";
 import moment from "moment";
-import { webConfig, normalizeArray } from "../util";
+import { webConfig, normalizeArray, config } from "../util";
 
 @Component({
   components: {
@@ -46,7 +46,7 @@ export default class Search extends Vue {
   @Watch("title")
   onTitleChange() {
     if (this.title) {
-      document.getElementsByTagName("title")[0].innerHTML = `${this.title} | 中文 SRS`;
+      document.getElementsByTagName("title")[0].innerHTML = `${this.title} | ${config.title}`;
     }
   }
 }

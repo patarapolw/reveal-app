@@ -13,7 +13,7 @@ v-row
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import Post from "@/components/Post.vue";
 import Empty from "@/components/Empty.vue";
-import { normalizeArray, g } from "../util";
+import { normalizeArray, g, config } from "../util";
 
 @Component({
   components: {
@@ -31,6 +31,7 @@ export default class Search extends Vue {
 
   public mounted() {
     this.updatePosts();
+    this.onQChanged();
   }
 
   @Watch("$route", {deep: true})
@@ -63,10 +64,11 @@ export default class Search extends Vue {
   }
 
   @Watch("g.q")
-  onQChanged(v: string) {
-    if (v.includes("\n")) {
+  onQChanged() {
+    if (this.g.q.includes("\n")) {
       this.g.q = this.g.q.trim();
       this.$router.push({query: {q: this.g.q}})
+      document.getElementsByTagName("title")[0].innerText = `${this.g.q ? `${this.g.q} - ` : ""}Blog | ${config.title} - Admin panel`;
     }
   }
 

@@ -1,3 +1,4 @@
+export const config = CONFIG;
 export const webConfig = WEB_CONFIG;
 
 export const g: {

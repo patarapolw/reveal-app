@@ -11,7 +11,7 @@ v-container.pa-0(style="height: 100%")
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { normalizeArray } from "../util";
+import { normalizeArray, config } from "../util";
 import { anyCompile } from "@zhsrs/make-html";
 import ToNested, { ITreeViewItem } from "record-to-nested";
 import matter from "gray-matter";
@@ -22,12 +22,11 @@ export default class App extends Vue {
   private open = [];
 
   private html: string = "";
+  private title: string = "";
 
   private toNested = new ToNested({key: "deck"});
 
   async mounted() {
-    this.html = "";
-
     const raw = await (await fetch("/api/post/", {
       method: "POST",
       headers: {
@@ -48,27 +47,44 @@ export default class App extends Vue {
     return id as string;
   }
 
-  @Watch("id")
-  async onRouteChanged() {
-    const {content} = await (await fetch(`/resources/${this.id}`)).json() || {};
-    if (content) {
-      this.html = anyCompile((content || "").split(/\r?\n===\r?\n/)[0]).html;
+  set id(value: string) {
+    if (value) {
+      this.$router.push({query: {id: value}});
+    } else {
+      this.$router.push({query: {}});
     }
   }
 
-  async onSelected(v: ITreeViewItem[]) {
+  @Watch("$route", {deep: true})
+  async onRouteChanged() {
+    if (this.id) {
+      const data = await (await fetch(`/api/post/${this.id}`, {
+          method: "POST"
+        })).json();
+      this.html = anyCompile(
+        matter(data.content).content
+      ).html;
+    } else {
+      this.html = "";
+    }
+  }
+
+  onSelected(v: ITreeViewItem[]) {
     if (v.length > 0) {
       const {data} = v[0];
       if (data) {
-        this.html = anyCompile(
-          matter((await (await fetch(`/api/post/${data._id}`, {
-            method: "POST"
-          })).json()).content).content
-        ).html;;
+        this.id = data._id;
+        this.title = data.title;
       } else {
-        this.html = "";
+        this.id = "";
+        this.title = "";
       }
     }
+  }
+
+  @Watch("title")
+  onTitleChange() {
+    document.getElementsByTagName("title")[0].innerText = `${this.title ? `${this.title} - ` : ""}Quiz | ${config.title}`;
   }
 }
 </script>

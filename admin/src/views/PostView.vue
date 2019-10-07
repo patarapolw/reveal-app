@@ -38,7 +38,7 @@ v-container.d-flex.flex-column.pa-0
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { g } from "../util";
+import { g, config } from "../util";
 import matter from "gray-matter";
 import { anyCompile } from "@zhsrs/make-html";
 
@@ -72,6 +72,7 @@ export default class BlogView extends Vue {
 
   mounted() {
     this.load();
+    document.getElementsByTagName("title")[0].innerText = `${config.title} - Admin panel`;
   }
 
   @Watch("$route", {deep: true})

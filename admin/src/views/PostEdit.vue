@@ -25,7 +25,7 @@ v-container.h-100.d-flex.flex-column.pa-0
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { anyCompile } from "@zhsrs/make-html";
 import matter from "gray-matter";
-import { adminConfig, clone } from "../util";
+import { adminConfig, clone, config } from "../util";
 import { toDate } from "valid-moment";
 
 @Component
@@ -52,14 +52,16 @@ export default class BlogEdit extends Vue {
     show: false
   }
 
-  mounted() {
+  async mounted() {
     this.isEdited = false;
-    this.load();
     this.codemirror.setSize("100%", "100%");
     this.codemirror.addKeyMap({
       "Cmd-S": () => {this.save()},
       "Ctrl-S": () => {this.save()}
     });
+
+    await this.load();
+    this.onTitleChange();
   }
 
   get codemirror(): CodeMirror.Editor {
@@ -98,8 +100,13 @@ export default class BlogEdit extends Vue {
 
   @Watch("hasPreview")
   resizeIFrame() {
-    if (this.isReveal) {
-      this.$nextTick(() => {
+    const cursor = this.codemirror.getDoc().getCursor();
+
+    this.$nextTick(() => {
+      this.codemirror.setSize("100%", "100%");
+      this.codemirror.scrollIntoView(null, 400);
+
+      if (this.isReveal) {
         this.iframeUrl = this.fileUrl || "about:blank";
         const iframeHolder = this.$refs.previewHolder as HTMLDivElement;
         const iframe = this.$refs.iframe as HTMLIFrameElement;
@@ -108,8 +115,9 @@ export default class BlogEdit extends Vue {
           iframe.style.maxHeight = `${sqWidth}px`;
           iframe.style.maxWidth = `${sqWidth}px`;
         }
-      });
-    }
+      } else {
+      }
+    });
   }
 
   reloadIFrame() {
@@ -237,7 +245,7 @@ export default class BlogEdit extends Vue {
 
   @Watch("headers.title")
   onTitleChange() {
-    document.getElementsByTagName("title")[0].innerText = `${this.headers.title || "New Entry"} | ZhSrs - Admin panel`;
+    document.getElementsByTagName("title")[0].innerText = `${this.headers.title || "New Entry"} | ${config.title} - Admin panel`;
   }
 }
 </script>

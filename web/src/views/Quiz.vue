@@ -10,7 +10,7 @@ v-container.pa-0(style="height: 100%")
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { normalizeArray } from "../util";
+import { normalizeArray, config } from "../util";
 import ToNested, { ITreeViewItem } from "record-to-nested";
 
 @Component
@@ -19,8 +19,11 @@ export default class Reveal extends Vue {
   private open = [];
 
   private toNested = new ToNested({key: "deck"});
+  private title = "";
 
   async mounted() {
+    this.title = "";
+
     const raw = await (await fetch("/api/post/", {
       method: "POST",
       headers: {
@@ -41,6 +44,14 @@ export default class Reveal extends Vue {
     return id as string;
   }
 
+  set id(value: string) {
+    if (value) {
+      this.$router.push({query: {id: value}});
+    } else {
+      this.$router.push({query: {}});
+    }
+  }
+
   get iframeUrl() {
     if (this.id) {
       return `reveal.html?id=${this.id}`;
@@ -49,13 +60,22 @@ export default class Reveal extends Vue {
     }
   }
 
-  async onSelected(v: ITreeViewItem[]) {
+  onSelected(v: ITreeViewItem[]) {
     if (v.length > 0) {
       const {data} = v[0];
       if (data) {
-        this.$router.push({query: {id: data._id}});
+        this.title = data.title;
+        this.id = data._id;
+      } else {
+        this.title = "";
+        this.id = "";
       }
     }
+  }
+
+  @Watch("title")
+  onTitleChange() {
+    document.getElementsByTagName("title")[0].innerText = `${this.title ? `${this.title} - ` : ""}Quiz | ${config.title}`;
   }
 }
 </script>
