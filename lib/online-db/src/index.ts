@@ -1,17 +1,9 @@
 import { pre, prop, Ref, index, DocumentType, getModelForClass } from "@typegoose/typegoose";
-import { generateSecret } from "./util";
-import uuid4 from "uuid/v4";
+import { generateSecret, getSafeId, findByQ, generateTable } from "./util";
 import SparkMD5 from "spark-md5";
 import stringify from "fast-json-stable-stringify";
 import mongoose from "mongoose";
-import UrlSafeString from "url-safe-string";
-import pinyin from "chinese-to-pinyin";
-import QParser from "q2filter";
-import AbstractDb, { IPost, IFindByQOptions, IProjection } from "@reveal-app/abstract-db";
-
-const uss = new UrlSafeString({
-  regexRemovePattern: /((?!([a-z0-9.])).)/gi
-});
+import AbstractDb, { IPost, IFindByQOptions, IMedia } from "@reveal-app/abstract-db";
 
 @pre<User>("save", async function () {
   if (!this.secret) {
@@ -36,23 +28,7 @@ class Post implements IPost {
   @prop({ required: true }) content!: string;
 
   static async getSafeId(title?: string) {
-    const ids = (await PostModel.find().select({_id: 1})).map((el) => el._id);
-    let outputId = title ? uss.generate(pinyin(title, {
-      keepRest: true, toneToNumber: true
-    })) : "";
-
-    while (ids.includes(outputId)) {
-      const m = /-(\d+)$/.exec(outputId);
-      let i = 1;
-
-      if (m) {
-        i = parseInt(m[1]) + 1;
-      }
-
-      outputId = `${outputId.replace(/-(\d+)$/, "")}-${i}`;
-    }
-
-    return outputId || uuid4();
+    return await getSafeId(PostModel, title);
   }
 
   static async findByQ(
@@ -62,46 +38,42 @@ class Post implements IPost {
       limit: 10
     }
   ) {
-    const parser = new QParser<Post>(q, {
+    return await findByQ<Post>(PostModel, {
       anyOf: new Set(["title", "tag"]),
       isString: new Set(["title", "tag"]),
-      isDate: new Set(["date"])
-    });
-
-    const fullCond = parser.getCondFull();
-    const sort = fullCond.sortBy || options.sort;
-
-    const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {updatedAt: -1};
-
-    const count = await PostModel.find(fullCond.cond).countDocuments();
-    let chain = PostModel.find(fullCond.cond);
-
-    if (options.fields) {
-      let proj: IProjection = {};
-      if (Array.isArray(options.fields)) {
-        for (const f of options.fields) {
-          proj[f] = 1;
-        }
-      } else {
-        proj = options.fields;
-      }
-
-      chain = chain.select(proj);
-    }
-
-    chain = chain.sort(sorter).skip(options.offset);
-
-    if (options.limit) {
-      chain = chain.limit(options.limit);
-    }
-
-    const data = await chain;
-
-    return {count, data};
+      isDate: new Set(["date", "createdAt", "updatedAt"])
+    }, q, options);
   }
 }
 
 const PostModel = getModelForClass(Post, {schemaOptions: {timestamps: true}});
+
+class Media implements IMedia {
+  @prop() _id!: string;
+  @prop({ required: true }) name!: string;
+  @prop({ default: [] }) tag!: string[];
+  @prop({ required: true }) data!: ArrayBuffer;
+
+  static async getSafeId(title?: string) {
+    return await getSafeId(MediaModel, title);
+  }
+
+  static async findByQ(
+    q: string,
+    options: IFindByQOptions = {
+      offset: 0,
+      limit: 10
+    }
+  ) {
+    return await findByQ<Media>(MediaModel, {
+      anyOf: new Set(["name", "tag"]),
+      isString: new Set(["name", "tag"]),
+      isDate: new Set(["createdAt", "updatedAt"])
+    }, q, options);
+  }
+}
+
+const MediaModel = getModelForClass(Media, {schemaOptions: {timestamps: true}});
 
 @pre<Card>("save", function () {
   const { front, back } = this;
@@ -134,37 +106,17 @@ const QuizModel = getModelForClass(Quiz, {schemaOptions: {timestamps: true}});
 export default class OnlineDb extends AbstractDb {
   public currentUser?: DocumentType<User>;
 
-  public tables = {
-    post: {
-      findByQ: PostModel.findByQ,
-      create: PostModel.create,
-      getSafeId: PostModel.getSafeId,
-      updateById: async (id: string, set: any) => {
-        await PostModel.findByIdAndUpdate(id, set);
-      },
-      deleteById: async (id: string) => {
-        await PostModel.findByIdAndDelete(id);
-      },
-      findById: async (id: string) => {
-        return await PostModel.findById(id);
-      },
-      updateMany: async (cond: any, set: any) => {
-        await PostModel.updateMany(cond, set);
-      },
-      addTags: async (ids: string[], tags: string[]) => {
-        await PostModel.updateMany({_id: {$in: ids}}, {$addToSet: {
-          tag: {$each: tags}
-        }});
-      },
-      removeTags: async (ids: string[], tags: string[]) => {
-        await PostModel.updateMany({_id: {$in: ids}}, {$pull: {
-          tag: {$in: tags}
-        }});
-      }
-    },
+  public models = {
+    post: PostModel,
+    media: MediaModel,
     user: UserModel,
     card: CardModel,
     quiz: QuizModel
+  }
+
+  public tables = {
+    post: generateTable<Post>(this.models.post),
+    media: generateTable<Media>(this.models.media)
   }
 
   constructor(private mongoUri: string) { 

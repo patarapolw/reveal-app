@@ -1,5 +1,5 @@
-import AbstractDb, { IPost, IFindByQOptions } from "@reveal-app/abstract-db";
-import Db from "liteorm";
+import AbstractDb, { IPost, ITables, IMedia } from "@reveal-app/abstract-db";
+import Db, { Collection } from "liteorm";
 declare class Post implements IPost {
     _id: string;
     title: string;
@@ -8,29 +8,25 @@ declare class Post implements IPost {
     type?: string;
     deck?: string;
     content: string;
-    updatedAt?: Date;
-    createdAt?: Date;
+    updatedAt: Date;
+    createdAt: Date;
+}
+declare class Media implements IMedia {
+    _id: string;
+    name: string;
+    data: ArrayBuffer;
+    tag: string[];
+    updatedAt: Date;
+    createdAt: Date;
 }
 export default class SqliteDb extends AbstractDb {
     filename: string;
     db: Db;
-    tables: {
-        post: {
-            create: (entry: IPost) => Promise<IPost>;
-            getSafeId: (title: string) => Promise<string>;
-            findById: (_id: string) => Promise<IPost | null>;
-            findByQ: (q: string, options: IFindByQOptions) => Promise<{
-                data: Partial<Post>[];
-                count: number;
-            }>;
-            updateById: (_id: string, set: any) => Promise<void>;
-            deleteById: (_id: string) => Promise<void>;
-            addTags: (ids: string[], tags: string[]) => Promise<void>;
-            removeTags: (ids: string[], tags: string[]) => Promise<void>;
-            updateMany: (cond: any, set: any) => Promise<void>;
-        };
+    models: {
+        post: Collection<Post>;
+        media: Collection<Media>;
     };
-    private cols;
+    tables: ITables;
     constructor(filename: string);
     connect(): Promise<this>;
     close(): Promise<this>;

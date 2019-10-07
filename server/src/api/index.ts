@@ -2,6 +2,7 @@ import { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import postRouter from "./post";
+import mediaRouter from "./media";
 import { g } from "../config";
 import OnlineDb from "@reveal-app/online-db";
 import SqliteDb from "@reveal-app/sqlite-db";
@@ -40,5 +41,6 @@ apiRouter.put("/", async (req, res, next) => {
 });
 
 apiRouter.use("/post", postRouter);
+apiRouter.use("/media", mediaRouter);
 
 export default apiRouter;

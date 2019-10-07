@@ -8,6 +8,13 @@ export interface IPost {
   content: string;
 }
 
+export interface IMedia {
+  _id: string;
+  name: string;
+  data: ArrayBuffer;
+  tag: string[];
+}
+
 export interface ISortOptions<T> {
   key: keyof T,
   desc: boolean
@@ -22,24 +29,30 @@ export interface IFindByQOptions {
   fields?: string[] | IProjection
 }
 
+export interface ITable<T> {
+  findByQ(q: string, options: IFindByQOptions): Promise<{
+    count: number;
+    data: Partial<T>[];
+  }>;
+  create(entry: T): Promise<T>;
+  getSafeId(src: string): Promise<string>;
+  updateById(id: string, set: any): Promise<void>;
+  findById(id: string): Promise<T | null>;
+  deleteById(id: string): Promise<void>;
+  updateMany(cond: any, op: any): Promise<void>;
+  addTags(ids: string[], tags: string[]): Promise<void>;
+  removeTags(ids: string[], tags: string[]): Promise<void>;
+}
+
+export interface ITables {
+  post: ITable<IPost>;
+  media: ITable<IMedia>;
+}
+
 export default abstract class AbstractDb {
   abstract async connect(): Promise<this>;
   abstract async close(): Promise<this>;
 
-  abstract tables: {
-    post: {
-      findByQ(q: string, options: IFindByQOptions): Promise<{
-        count: number;
-        data: Partial<IPost>[];
-      }>;
-      create(entry: IPost): Promise<IPost>;
-      getSafeId(src: string): Promise<string>;
-      updateById(id: string, set: any): Promise<void>;
-      findById(id: string): Promise<IPost | null>;
-      deleteById(id: string): Promise<void>;
-      updateMany(cond: any, op: any): Promise<void>;
-      addTags(ids: string[], tags: string[]): Promise<void>;
-      removeTags(ids: string[], tags: string[]): Promise<void>;
-    }
-  }
+  abstract tables: ITables;
+  abstract models: Record<string, any>;
 }

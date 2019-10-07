@@ -1,6 +1,5 @@
 import { Ref, DocumentType } from "@typegoose/typegoose";
-import mongoose from "mongoose";
-import AbstractDb, { IPost, IFindByQOptions } from "@reveal-app/abstract-db";
+import AbstractDb, { IPost, IFindByQOptions, IMedia } from "@reveal-app/abstract-db";
 declare class User {
     email: string;
     picture?: string;
@@ -16,8 +15,19 @@ declare class Post implements IPost {
     content: string;
     static getSafeId(title?: string): Promise<string>;
     static findByQ(q: string, options?: IFindByQOptions): Promise<{
+        data: Post[];
         count: number;
-        data: DocumentType<Post>[];
+    }>;
+}
+declare class Media implements IMedia {
+    _id: string;
+    name: string;
+    tag: string[];
+    data: ArrayBuffer;
+    static getSafeId(title?: string): Promise<string>;
+    static findByQ(q: string, options?: IFindByQOptions): Promise<{
+        data: Media[];
+        count: number;
     }>;
 }
 declare class Card {
@@ -43,26 +53,16 @@ declare class Quiz {
 export default class OnlineDb extends AbstractDb {
     private mongoUri;
     currentUser?: DocumentType<User>;
-    tables: {
-        post: {
-            findByQ: typeof Post.findByQ;
-            create: {
-                (docs: any[], callback?: ((err: any, res: DocumentType<Post>[]) => void) | undefined): Promise<DocumentType<Post>[]>;
-                (docs: any[], options?: mongoose.SaveOptions | undefined, callback?: ((err: any, res: DocumentType<Post>[]) => void) | undefined): Promise<DocumentType<Post>[]>;
-                (...docs: any[]): Promise<DocumentType<Post>>;
-                (...docsWithCallback: any[]): Promise<DocumentType<Post>>;
-            };
-            getSafeId: typeof Post.getSafeId;
-            updateById: (id: string, set: any) => Promise<void>;
-            deleteById: (id: string) => Promise<void>;
-            findById: (id: string) => Promise<DocumentType<Post> | null>;
-            updateMany: (cond: any, set: any) => Promise<void>;
-            addTags: (ids: string[], tags: string[]) => Promise<void>;
-            removeTags: (ids: string[], tags: string[]) => Promise<void>;
-        };
+    models: {
+        post: import("@typegoose/typegoose").ReturnModelType<typeof Post, unknown>;
+        media: import("@typegoose/typegoose").ReturnModelType<typeof Media, unknown>;
         user: import("@typegoose/typegoose").ReturnModelType<typeof User, unknown>;
         card: import("@typegoose/typegoose").ReturnModelType<typeof Card, unknown>;
         quiz: import("@typegoose/typegoose").ReturnModelType<typeof Quiz, unknown>;
+    };
+    tables: {
+        post: import("@reveal-app/abstract-db").ITable<Post>;
+        media: import("@reveal-app/abstract-db").ITable<Media>;
     };
     constructor(mongoUri: string);
     connect(): Promise<this>;
