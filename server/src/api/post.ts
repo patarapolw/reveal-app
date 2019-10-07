@@ -9,7 +9,7 @@ const postRouter = Router();
 postRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort, fields } = req.body;
-    const r = await g.db.tables.post.findByQ(q || "", {
+    const r = await g.db!.tables.post.findByQ(q || "", {
       offset,
       limit: limit || 10,
       sort,
@@ -31,13 +31,13 @@ postRouter.put("/", async (req, res, next) => {
     let outputId = _id || newId || undefined;
 
     if (!_id) {
-      const p = await g.db.tables.post.create({
-        _id: await g.db.tables.post.getSafeId(outputId || title),
+      const p = await g.db!.tables.post.create({
+        _id: await g.db!.tables.post.getSafeId(outputId || title),
         ...payload
       });
       outputId = p._id;
     } else {
-      await g.db.tables.post.updateById(_id, {$set: payload});
+      await g.db!.tables.post.updateById(_id, {$set: payload});
     }
     
     return res.json({
@@ -50,7 +50,7 @@ postRouter.put("/", async (req, res, next) => {
 
 postRouter.post("/:id", async (req, res, next) => {
   try {
-    const p = await g.db.tables.post.findById(req.params.id)
+    const p = await g.db!.tables.post.findById(req.params.id)
     return res.json(p);
   } catch(e) {
     return next(e);
@@ -69,7 +69,7 @@ postRouter.delete("/:id", async (req, res, next) => {
 postRouter.put("/tags", async (req, res, next) => {
   try {
     const {ids, tags} = req.body;
-    await g.db.tables.post.addTags(ids, tags);
+    await g.db!.tables.post.addTags(ids, tags);
     return res.sendStatus(201);
   } catch(e) {
     return next(e);
@@ -79,7 +79,7 @@ postRouter.put("/tags", async (req, res, next) => {
 postRouter.delete("/tags", async (req, res, next) => {
   try {
     const {ids, tags} = req.body;
-    await g.db.tables.post.removeTags(ids, tags);
+    await g.db!.tables.post.removeTags(ids, tags);
     return res.sendStatus(201);
   } catch(e) {
     return next(e);

@@ -30,7 +30,7 @@ export default abstract class AbstractDb {
     post: {
       findByQ(q: string, options: IFindByQOptions): Promise<{
         count: number;
-        data: IPost[];
+        data: Partial<IPost>[];
       }>;
       create(entry: IPost): Promise<IPost>;
       getSafeId(src: string): Promise<string>;

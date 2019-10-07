@@ -6,6 +6,8 @@ import "./auth/auth0";
 import "./auth/token";
 import apiRouter from "./api";
 import { g } from "./config";
+import OnlineDb from "@reveal-app/online-db";
+import SqliteDb from "@reveal-app/sqlite-db";
 
 const app = express();
 const port = process.env.PORT || 24000;
@@ -34,6 +36,10 @@ app.use(express.static("../web/dist"));
 app.use("/api", apiRouter);
 
 app.listen(port, async () => {
-  await g.db.connect();
+  if (process.env.FILENAME) {
+    g.db = await new SqliteDb(process.env.FILENAME).connect();
+  } else if (process.env.MONGO_URI) {
+    g.db = await new OnlineDb(process.env.MONGO_URI).connect();
+  }
   console.log(`Server running on http://localhost:${port}`);
 });

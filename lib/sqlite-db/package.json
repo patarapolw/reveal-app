@@ -1,0 +1,27 @@
+{
+  "name": "@reveal-app/sqlite-db",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
+  "license": "MIT",
+  "dependencies": {
+    "@reveal-app/abstract-db": "file:../abstract-db",
+    "@types/spark-md5": "^3.0.1",
+    "@types/uuid": "^3.4.5",
+    "chinese-to-pinyin": "^1.1.2",
+    "fast-json-stable-stringify": "^2.0.0",
+    "liteorm": "^0.2.4",
+    "q2filter": "^0.2.2",
+    "spark-md5": "^3.0.0",
+    "url-safe-string": "^1.1.0",
+    "uuid": "^3.3.3"
+  }
+}

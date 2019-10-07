@@ -16,6 +16,7 @@
   "dependencies": {
     "@reveal-app/abstract-db": "file:../lib/abstract-db",
     "@reveal-app/online-db": "file:../lib/online-db",
+    "@reveal-app/sqlite-db": "file:../lib/sqlite-db",
     "@types/connect-mongodb-session": "0.0.1",
     "@types/cors": "^2.8.6",
     "@types/dotenv": "^6.1.1",
