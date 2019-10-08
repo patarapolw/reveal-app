@@ -24,23 +24,22 @@ v-container.h-100.d-flex.flex-column.pa-0
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import matter from "gray-matter";
-import { clone } from "../util";
+import { clone, setTitle } from "../util";
 import { toDate } from "valid-moment";
-import { g, config } from '../util';
-import dotProp from "dot-prop";
+import { g } from '../util';
 import MakeHTML from "@reveal-app/make-html";
 
 let makeHTML: MakeHTML;
 
 try {
   const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"],
     [slideExt, speakExt]
   );
 } catch(e) {
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"]
   );
 }
 
@@ -277,8 +276,7 @@ export default class BlogEdit extends Vue {
 
   @Watch("headers.title")
   onTitleChange() {
-    document.getElementsByTagName("title")[0].innerText = 
-    `${this.headers.title || "New Entry"} | ${process.env.VUE_APP_TITLE} - Admin panel`;
+    setTitle(this.headers.title || "New Entry");
   }
 }
 </script>

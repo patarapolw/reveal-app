@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@mdi/font": "^3.6.95",
+    "@reveal-app/abstract-db": "file:../lib/abstract-db",
     "@reveal-app/make-html": "file:../lib/make-html",
     "@types/codemirror": "0.0.77",
     "@types/showdown": "^1.9.3",

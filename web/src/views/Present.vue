@@ -10,7 +10,7 @@ v-container.pa-0(style="height: 100%")
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { normalizeArray } from "../util";
+import { normalizeArray, setTitle } from "../util";
 import ToNested, { ITreeViewItem } from "record-to-nested";
 
 @Component
@@ -75,8 +75,7 @@ export default class Reveal extends Vue {
 
   @Watch("title")
   onTitleChange() {
-    document.getElementsByTagName("title")[0].innerText = 
-    `${this.title ? `${this.title} - ` : ""}Quiz | ${process.env.VUE_APP_TITLE}`;
+    setTitle(`${this.title ? `${this.title} - ` : ""}Quiz`);
   }
 }
 </script>

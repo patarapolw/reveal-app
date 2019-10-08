@@ -14,5 +14,5 @@ export declare function generateTable<T extends {
     _id: string;
     updatedAt: Date;
     tag: string[];
-}>(model: Collection<T>, qParserOptions: Partial<IQParserOptions<T>>): ITable<T>;
+}>(model: Collection<T>, qParserOptions: Partial<IQParserOptions<any>>): ITable<T>;
 //# sourceMappingURL=util.d.ts.map

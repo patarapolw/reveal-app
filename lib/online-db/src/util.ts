@@ -47,10 +47,7 @@ export async function getSafeId<T extends AnyParamConstructor<any>>(
 
 export async function findByQ<T>(
   model: ReturnModelType<any>,
-  parserOptions: Partial<IQParserOptions<T & {
-    createdAt: Date;
-    updatedAt: Date;
-  }>>,
+  parserOptions: Partial<IQParserOptions<any>>,
   q: string,
   options: IFindByQOptions = {
     offset: 0,

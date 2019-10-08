@@ -3,9 +3,9 @@ v-card.ma-3
   .post--meta.pa-2
     .d-flex
       span
-        a(:href="author.link"): img.avatar(:src="author.avatar")
+        a(:href="dotProp.get(author, 'info.website') || '#'"): img.avatar(:src="author.image")
       span.ml-3
-        a(:href="author.link") {{author.login}}
+        a(:href="dotProp.get(author, 'info.website') || '#'") {{author.name}}
       span(style="flex-grow: 1")
       span {{dateString}}
   v-card-title.v-link(@click="to ? $router.push(to) : undefined") {{title}}
@@ -17,21 +17,21 @@ v-card.ma-3
 import { Vue, Component, Prop } from "vue-property-decorator";
 import moment from "moment";
 import matter from "gray-matter";
-import { g, config } from '../util';
-import dotProp from "dot-prop";
+import { g } from '../util';
 import MakeHTML from "@reveal-app/make-html";
+import dotProp from "dot-prop";
 
 let makeHTML: MakeHTML;
 
 try {
   const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"],
     [slideExt, speakExt]
   );
 } catch(e) {
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"]
   );
 }
 
@@ -40,6 +40,8 @@ export default class Post extends Vue {
   @Prop() id!: string;
   @Prop({default: false}) isTeaser!: boolean;
   @Prop() content!: string;
+
+  dotProp = dotProp;
 
   get matter() {
     return matter(this.content);
@@ -68,7 +70,7 @@ export default class Post extends Vue {
   get author() {
     const author = this.matter.data ? this.matter.data.author : null;
     if (!author) {
-      return dotProp.get(config, "web.defaultAuthor") || {};
+      return g.user;
     }
 
     return author;

@@ -3,17 +3,52 @@ import { generateSecret, getSafeId, findByQ, generateTable } from "./util";
 import SparkMD5 from "spark-md5";
 import stringify from "fast-json-stable-stringify";
 import mongoose from "mongoose";
-import AbstractDb, { IPost, IFindByQOptions, IMedia } from "@reveal-app/abstract-db";
+import AbstractDb, { IPost, IFindByQOptions, IMedia, IUser } from "@reveal-app/abstract-db";
 
 @pre<User>("save", async function () {
   if (!this.secret) {
     this.secret = await generateSecret();
   }
 })
-class User {
-  @prop({ required: true, unique: true }) email!: string;
+class User implements IUser {
+  @prop() _id!: string;
+  @prop() type?: string;
+  @prop({ unique: true }) email?: string;
   @prop() picture?: string;
-  @prop({ required: true }) secret!: string;
+  @prop() secret?: string;
+  @prop() info?: {
+    name?: string;
+    website?: string;
+  };
+  @prop() web?: {
+    title: string;
+    banner?: string;
+    codemirror?: {
+      theme?: string;
+    };
+    disqus?: string;
+    about?: string;
+    hint?: string;
+  }
+  @prop({default: []}) tag!: string[];
+
+  static async getSafeId(title?: string) {
+    return await getSafeId(UserModel, title);
+  }
+
+  static async findByQ(
+    q: string,
+    options: IFindByQOptions = {
+      offset: 0,
+      limit: 10
+    }
+  ) {
+    return await findByQ<User>(UserModel, {
+      anyOf: new Set(["email", "tag", "info.name", "info.website"]),
+      isString: new Set(["email", "tag", "info.name", "info.website"]),
+      isDate: new Set(["createdAt", "updatedAt"])
+    }, q, options);
+  }
 }
 
 const UserModel = getModelForClass(User, {schemaOptions: {timestamps: true}});
@@ -116,7 +151,8 @@ export default class OnlineDb extends AbstractDb {
 
   public tables = {
     post: generateTable<Post>(this.models.post),
-    media: generateTable<Media>(this.models.media)
+    media: generateTable<Media>(this.models.media),
+    user: generateTable<User>(this.models.user)
   }
 
   constructor(private mongoUri: string) { 
@@ -138,7 +174,7 @@ export default class OnlineDb extends AbstractDb {
     const u = await UserModel.findOne({ email });
     if (u) {
       this.currentUser = u;
-      return u.secret;
+      return u.secret!;
     } else {
       const secret = await generateSecret();
       this.currentUser = await UserModel.create({
@@ -152,7 +188,7 @@ export default class OnlineDb extends AbstractDb {
   }
 
   public async getSecret(): Promise<string | null> {
-    return this.currentUser ? this.currentUser.secret : null;
+    return this.currentUser ? this.currentUser.secret! : null;
   }
 
   public async newSecret(): Promise<string | null> {

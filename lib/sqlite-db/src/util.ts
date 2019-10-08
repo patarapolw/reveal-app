@@ -73,7 +73,7 @@ export async function findByQ<T extends {updatedAt: Date}>(
 
 export function generateTable<T extends {_id: string, updatedAt: Date, tag: string[]}>(
   model: Collection<T>,
-  qParserOptions: Partial<IQParserOptions<T>>
+  qParserOptions: Partial<IQParserOptions<any>>
 ): ITable<T> {
   return {
     create: async (entry: T) => {

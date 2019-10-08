@@ -11,7 +11,7 @@ v-container.pa-0(style="height: 100%")
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { normalizeArray, config } from "../util";
+import { normalizeArray, setTitle } from "../util";
 import ToNested, { ITreeViewItem } from "record-to-nested";
 import matter from "gray-matter";
 import dotProp from "dot-prop";
@@ -21,13 +21,13 @@ let makeHTML: MakeHTML;
 
 try {
   const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"],
     [slideExt, speakExt]
   );
 } catch(e) {
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"]
   );
 }
 
@@ -99,8 +99,7 @@ export default class App extends Vue {
 
   @Watch("title")
   onTitleChange() {
-    document.getElementsByTagName("title")[0].innerText = 
-    `${this.title ? `${this.title} - ` : ""}Quiz | ${process.env.VUE_APP_TITLE}`;
+    setTitle(`${this.title ? `${this.title} - ` : ""}Quiz`);
   }
 }
 </script>

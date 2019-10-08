@@ -7,34 +7,34 @@ v-app
           v-icon mdi-home
         v-list-item-content
           v-list-item-title Blog
-      v-list-item(to="/resources")
+      v-list-item(to="/resource")
         v-list-item-avatar
           v-icon mdi-sitemap
         v-list-item-content
-          v-list-item-title Resources
-      v-list-item(to="/quiz")
+          v-list-item-title Resource
+      v-list-item(to="/present")
         v-list-item-avatar
-          v-icon mdi-frequently-asked-questions
+          v-icon mdi-play-box-outline
         v-list-item-content
-          v-list-item-title Quiz
+          v-list-item-title Presentations
       v-list-item(href="https://github.com/patarapolw/reveal-app" target="_blank")
         v-list-item-avatar
           v-icon mdi-github-circle
         v-list-item-content
           v-list-item-title GitHub
-      v-list-item(v-if="about" to="/about")
+      v-list-item(v-if="getUserDeep('web.about')" to="/about")
         v-list-item-avatar
           v-icon mdi-information-variant
         v-list-item-content
           v-list-item-title About
-    template(v-if="hint" v-slot:append)
+    template(v-if="getUserDeep('web.hint')" v-slot:append)
       v-card
         v-card-title Hint
-        v-card-text {{hint}}
+        v-card-text {{getUserDeep('web.about')}}
   v-app-bar(:clipped-left="isDrawer" app color="green" dark)
     v-toolbar-title.mr-3
       v-app-bar-nav-icon.mr-2(@click.stop="isDrawer = !isDrawer")
-      span.hidden-md-and-down(style="cursor: pointer;" @click="$router.push('/')") {{banner}}
+      span.hidden-md-and-down(style="cursor: pointer;" @click="$router.push('/')") {{getUserDeep('web.banner')}}
     .flex-grow-1
     v-text-field.col-lg-4(flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"
       v-model="g.q" @keydown="onSearchKeydown")
@@ -44,18 +44,32 @@ v-app
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { g, config } from "./util";
+import { g } from "./util";
 import dotProp from "dot-prop";
 
 @Component
 export default class App extends Vue {
   private isDrawer: boolean = this.$vuetify.breakpoint.lgAndUp;
   private g = g;
+  
+  private isElectron = !!process.env.VUE_APP_ELECTRON;
 
-  private title = process.env.VUE_APP_TITLE;
-  private banner = config.banner;
-  private about = process.env.VUE_APP_ABOUT;
-  private hint: string = dotProp.get(config, "web.hint");
+  mounted() {
+    Array.from(document.getElementsByTagName("input")).forEach((input) => {
+      input.spellcheck = false;
+      input.autocapitalize = "off";
+      input.autocomplete = "off";
+    });
+  }
+
+  getUserDeep(path: string) {
+    dotProp.get(g.user!, path);
+  }
+
+  setUserDeep(path: string, value: string) {
+    dotProp.set(g.user!, path, value);
+    this.$set(this.g, "user", g.user);
+  }
 
   @Watch("$route.path")
   onRouteChanged(to: string) {

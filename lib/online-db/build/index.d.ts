@@ -1,9 +1,31 @@
 import { Ref, DocumentType } from "@typegoose/typegoose";
-import AbstractDb, { IPost, IFindByQOptions, IMedia } from "@reveal-app/abstract-db";
-declare class User {
-    email: string;
+import AbstractDb, { IPost, IFindByQOptions, IMedia, IUser } from "@reveal-app/abstract-db";
+declare class User implements IUser {
+    _id: string;
+    type?: string;
+    email?: string;
     picture?: string;
-    secret: string;
+    secret?: string;
+    info?: {
+        name?: string;
+        website?: string;
+    };
+    web?: {
+        title: string;
+        banner?: string;
+        codemirror?: {
+            theme?: string;
+        };
+        disqus?: string;
+        about?: string;
+        hint?: string;
+    };
+    tag: string[];
+    static getSafeId(title?: string): Promise<string>;
+    static findByQ(q: string, options?: IFindByQOptions): Promise<{
+        data: User[];
+        count: number;
+    }>;
 }
 declare class Post implements IPost {
     _id: string;
@@ -63,6 +85,7 @@ export default class OnlineDb extends AbstractDb {
     tables: {
         post: import("@reveal-app/abstract-db").ITable<Post>;
         media: import("@reveal-app/abstract-db").ITable<Media>;
+        user: import("@reveal-app/abstract-db").ITable<User>;
     };
     constructor(mongoUri: string);
     connect(): Promise<this>;

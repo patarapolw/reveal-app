@@ -22,16 +22,14 @@ import "codemirror/addon/fold/comment-fold.js";
 import "codemirror/addon/fold/markdown-fold.js";
 import "codemirror/addon/fold/foldgutter.css";
 import "codemirror/addon/scroll/scrollpastend.js";
-
-const dotProp = require("dot-prop");
-const { config } = require("./util");
-require(`codemirror/theme/${dotProp.get(config, "admin.codemirror.theme") || "monokai"}.css`);
+import "codemirror/theme/monokai.css";
+import { g } from "./util";
 
 Vue.config.productionTip = false
 
 Vue.use(VueCodemirror, {
   options: {
-    ...(dotProp.get(config, "admin.codemirror") || {}),
+    theme: "monokai",
     lineNumbers: true,
     autoCloseBrackets: true,
     gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
@@ -48,10 +46,25 @@ Vue.use(VueCodemirror, {
     foldGutter: true,
     scrollPastEnd: true
   }
-})
+});
 
-new Vue({
-  router,
-  vuetify,
-  render: h => h(App)
-}).$mount('#app')
+(async () => {
+  const r = await (await fetch("/api/user/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      q: `-web=NULL`,
+      limit: 1
+    })
+  })).json();
+
+  g.user = r.data[0] || g.user;
+
+  new Vue({
+    router,
+    vuetify,
+    render: h => h(App)
+  }).$mount('#app');
+})().catch(console.error);

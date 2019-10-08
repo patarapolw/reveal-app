@@ -11,10 +11,10 @@ v-row
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import Post from "@/components/Post.vue";
-import Empty from "@/components/Empty.vue";
+import Post from "../components/Post.vue";
+import Empty from "../components/Empty.vue";
 import moment from "moment";
-import { normalizeArray, config } from "../util";
+import { normalizeArray, g, setTitle } from "../util";
 import dotProp from "dot-prop";
 
 @Component({
@@ -24,7 +24,7 @@ import dotProp from "dot-prop";
 })
 export default class Search extends Vue {
   private content: string = "";
-  private disqus?: string = dotProp.get(config, "web.disqus");
+  private disqus?: string = dotProp.get(g.user!, "web.disqus");
 
   private title: string = "";
 
@@ -47,8 +47,7 @@ export default class Search extends Vue {
   @Watch("title")
   onTitleChange() {
     if (this.title) {
-      document.getElementsByTagName("title")[0].innerHTML = 
-      `${this.title} | ${process.env.VUE_APP_TITLE}`;
+      setTitle(`${this.title} | ${process.env.VUE_APP_TITLE}`);
     }
   }
 }

@@ -1,3 +1,25 @@
+export interface IUser {
+    _id: string;
+    type?: string;
+    email?: string;
+    picture?: string;
+    secret?: string;
+    info?: {
+        name?: string;
+        website?: string;
+    };
+    web?: {
+        title: string;
+        banner?: string;
+        codemirror?: {
+            theme?: string;
+        };
+        disqus?: string;
+        about?: string;
+        hint?: string;
+    };
+    tag: string[];
+}
 export interface IPost {
     _id: string;
     title: string;
@@ -32,15 +54,16 @@ export interface ITable<T> {
         data: Partial<T>[];
     }>;
     create(entry: T): Promise<T>;
-    getSafeId(src: string): Promise<string>;
     updateById(id: string, set: any): Promise<void>;
     findById(id: string): Promise<T | null>;
     deleteById(id: string): Promise<void>;
     updateMany(cond: any, op: any): Promise<void>;
     addTags(ids: string[], tags: string[]): Promise<void>;
     removeTags(ids: string[], tags: string[]): Promise<void>;
+    getSafeId(src: string): Promise<string>;
 }
 export interface ITables {
+    user: ITable<IUser>;
     post: ITable<IPost>;
     media: ITable<IMedia>;
 }

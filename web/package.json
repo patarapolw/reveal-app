@@ -2,6 +2,7 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  "main": "src/export.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -9,6 +10,7 @@
   },
   "dependencies": {
     "@mdi/font": "^3.6.95",
+    "@reveal-app/abstract-db": "file:../lib/abstract-db",
     "@reveal-app/make-html": "file:../lib/make-html",
     "@types/jquery": "^3.3.31",
     "@types/node": "^12.7.9",

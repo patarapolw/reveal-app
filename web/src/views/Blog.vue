@@ -1,7 +1,7 @@
 <template lang="pug">
 v-row
   v-col.col-lg-8.col-md-12
-    h1.tag(v-if="$route.tag") {{$route.tag}}
+    h1.tag(v-if="$route.params.tag") {{$route.params.tag}}
     div(v-if="posts && posts.length > 0")
       post(v-for="p in posts" :id="p._id" :is-teaser="true" :key="p._id" :content="p.content")
       v-pagination(v-model="page" :length="Math.ceil(count / perPage)")
@@ -11,9 +11,9 @@ v-row
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import Post from "@/components/Post.vue";
-import Empty from "@/components/Empty.vue";
-import { normalizeArray, g } from "../util";
+import Post from "../components/Post.vue";
+import Empty from "../components/Empty.vue";
+import { normalizeArray, g, setTitle } from "../util";
 
 @Component({
   components: {
@@ -68,8 +68,7 @@ export default class Search extends Vue {
     if (this.g.q.includes("\n")) {
       this.g.q = this.g.q.trim();
       this.$router.push({query: {q: this.g.q}})
-      document.getElementsByTagName("title")[0].innerText = 
-      `${this.g.q ? `${this.g.q} - ` : ""}Blog | ${process.env.VUE_APP_TITLE} - Admin panel`;
+      setTitle(`${this.g.q ? `${this.g.q} - ` : ""}Blog`);
     }
   }
 

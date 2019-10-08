@@ -4,9 +4,8 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 const router = new Router({
-  mode: "history",
   routes: [
-    {path: "/", redirect: "/post/edit"},
+    {path: "/", redirect: "/post/view"},
     {
       path: "/post/edit",
       component: () => import(/* webpackChunkName: "PostEdit" */ './views/PostEdit.vue')
@@ -14,7 +13,7 @@ const router = new Router({
     {
       path: "/post/view",
       component: () => import(/* webpackChunkName: "PostView" */ './views/PostView.vue')
-    }
+    },
   ]
 })
 

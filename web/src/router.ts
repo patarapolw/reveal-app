@@ -6,17 +6,17 @@ Vue.use(Router)
 const router = new Router({
   routes: [
     {
-      path: '/resources',
-      name: 'resources',
+      path: '/resource',
+      name: 'resource',
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "resource" */ './views/Resource.vue')
     },
     {
-      path: '/quiz',
-      name: 'quiz',
-      component: () => import(/* webpackChunkName: "quiz" */ './views/Quiz.vue')
+      path: '/present',
+      name: 'present',
+      component: () => import(/* webpackChunkName: "present" */ './views/Present.vue')
     },
     {
       path: "/blog",

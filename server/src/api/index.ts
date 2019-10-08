@@ -6,6 +6,7 @@ import mediaRouter from "./media";
 import { g } from "../config";
 import OnlineDb from "@reveal-app/online-db";
 import SqliteDb from "@reveal-app/sqlite-db";
+import userRouter from "./user";
 
 const apiRouter = Router();
 
@@ -42,5 +43,6 @@ apiRouter.put("/", async (req, res, next) => {
 
 apiRouter.use("/post", postRouter);
 apiRouter.use("/media", mediaRouter);
+apiRouter.use("/user", userRouter);
 
 export default apiRouter;

@@ -1,20 +1,18 @@
 import "./reveal.scss";
 import matter from "gray-matter";
-import { config } from './util';
-import dotProp from "dot-prop";
 import MakeHTML from "@reveal-app/make-html";
 
 let makeHTML: MakeHTML;
 
 try {
   const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"],
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"],
     [slideExt, speakExt]
   );
 } catch(e) {
-  makeHTML = new MakeHTML(dotProp.get(
-    config, "admin.codemirror.langs") || ["yaml", "markdown", "json", "application/json"]
+  makeHTML = new MakeHTML(
+    ["yaml", "markdown", "json", "application/json"]
   );
 }
 

@@ -1,7 +1,9 @@
-export const config = CONFIG;
+import { IUser } from "@reveal-app/abstract-db";
+import dotProp from 'dot-prop';
 
 export const g: {
   q: string;
+  user?: Partial<IUser>
 } = {
   q: ""
 };
@@ -39,4 +41,13 @@ export function speak(s: string, lang: string = "zh-CN", rate: number = 0.8) {
     u.rate = rate || 0.8;
     speechSynthesis.speak(u);
   }
+}
+
+export function setTitle(s?: string): string {
+  const subtitle = dotProp.get(g.user!, "web.title");
+  const title = `${s ? `${s} | ` : ""}${subtitle ? `${subtitle} - ` : ""}`;
+
+  document.getElementsByTagName("title")[0].innerText = title;
+
+  return title;
 }
