@@ -47,7 +47,7 @@ export default class Search extends Vue {
   @Watch("title")
   onTitleChange() {
     if (this.title) {
-      setTitle(`${this.title} | ${process.env.VUE_APP_TITLE}`);
+      setTitle(`${this.title}`);
     }
   }
 }

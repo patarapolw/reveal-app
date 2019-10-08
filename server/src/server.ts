@@ -8,6 +8,7 @@ import apiRouter from "./api";
 import { g } from "./config";
 import OnlineDb from "@reveal-app/online-db";
 import SqliteDb from "@reveal-app/sqlite-db";
+import history from "connect-history-api-fallback";
 
 const app = express();
 const port = process.env.PORT || 24000;
@@ -31,6 +32,18 @@ if (process.env.MONGO_URI) {
   app.use(passport.initialize());
   app.use(passport.session());
 }
+
+const rewrites = [{ from: /\/reveal/, to: '/reveal.html' }];
+
+if (process.env.NODE_ENV === "development" || !process.env.MONGO_URI) {
+  rewrites.push({ from: /\/admin/, to: '/admin.html' });
+} else {
+  app.use("/admin*", (req, res) => res.sendStatus(401));
+}
+
+app.use(history({
+  rewrites
+}));
 
 app.use(express.static("../web/dist"));
 app.use("/api", apiRouter);

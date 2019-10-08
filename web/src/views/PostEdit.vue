@@ -151,7 +151,7 @@ export default class BlogEdit extends Vue {
           if (url.searchParams.get("id") === id) {
             iframe.contentWindow.location.reload();
           } else {
-            this.iframeUrl = `/web/reveal.html?id=${id}`;
+            this.iframeUrl = `/reveal?id=${id}`;
           }
         }
       } else {
@@ -174,11 +174,11 @@ export default class BlogEdit extends Vue {
           return url.href;
         }
         
-        return new URL(`/web/reveal.html?id=${id}`, location.origin).href;
+        return this.$router.resolve(`/reveal?id=${id}`).href;
       }
     }
 
-    return new URL(`/web/#/post?id=${id}`, location.origin).href;
+    return this.$router.resolve(`/post?id=${id}`).href;
   }
 
   openInExternal() {
@@ -276,7 +276,7 @@ export default class BlogEdit extends Vue {
 
   @Watch("headers.title")
   onTitleChange() {
-    setTitle(this.headers.title || "New Entry");
+    setTitle(this.headers.title || "New Entry", true);
   }
 }
 </script>

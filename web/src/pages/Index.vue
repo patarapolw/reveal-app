@@ -4,7 +4,7 @@ v-app
     v-list(dense)
       v-list-item(to="/blog")
         v-list-item-avatar
-          v-icon mdi-home
+          v-icon mdi-calendar-edit
         v-list-item-content
           v-list-item-title Blog
       v-list-item(to="/resource")
@@ -30,7 +30,7 @@ v-app
     template(v-if="getUserDeep('web.hint')" v-slot:append)
       v-card
         v-card-title Hint
-        v-card-text {{getUserDeep('web.about')}}
+        v-card-text {{getUserDeep('web.hint')}}
   v-app-bar(:clipped-left="isDrawer" app color="green" dark)
     v-toolbar-title.mr-3
       v-app-bar-nav-icon.mr-2(@click.stop="isDrawer = !isDrawer")
@@ -44,15 +44,13 @@ v-app
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { g } from "./util";
+import { g } from "../util";
 import dotProp from "dot-prop";
 
 @Component
-export default class App extends Vue {
+export default class Index extends Vue {
   private isDrawer: boolean = this.$vuetify.breakpoint.lgAndUp;
   private g = g;
-  
-  private isElectron = !!process.env.VUE_APP_ELECTRON;
 
   mounted() {
     Array.from(document.getElementsByTagName("input")).forEach((input) => {
@@ -63,7 +61,7 @@ export default class App extends Vue {
   }
 
   getUserDeep(path: string) {
-    dotProp.get(g.user!, path);
+    return dotProp.get(g.user, path);
   }
 
   setUserDeep(path: string, value: string) {

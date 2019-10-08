@@ -3,9 +3,14 @@ import dotProp from 'dot-prop';
 
 export const g: {
   q: string;
-  user?: Partial<IUser>
+  user: Partial<IUser>
 } = {
-  q: ""
+  q: "",
+  user: {
+    web: {
+      title: ""
+    }
+  }
 };
 
 export function escapeRegExp(s: string) {
@@ -43,11 +48,15 @@ export function speak(s: string, lang: string = "zh-CN", rate: number = 0.8) {
   }
 }
 
-export function setTitle(s?: string): string {
-  const subtitle = dotProp.get(g.user!, "web.title");
-  const title = `${s ? `${s} | ` : ""}${subtitle ? `${subtitle} - ` : ""}`;
+export function setTitle(s?: string, isAdmin?: boolean): string {
+  const subtitle = dotProp.get(g.user, "web.title");
+  const title = `${s ? `${s} | ` : ""}${subtitle || ""}${isAdmin ? " - Admin panel" : ""}`;
 
   document.getElementsByTagName("title")[0].innerText = title;
 
   return title;
+}
+
+export function clone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
 }

@@ -34,7 +34,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "../lib/globals.d.ts"
+    "src/declaration.d.ts"
   ],
   "exclude": [
     "node_modules"

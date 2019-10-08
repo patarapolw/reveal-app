@@ -1,6 +1,7 @@
 import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
+import Index from './pages/Index.vue'
+import {routerOptions, activateVLink} from './router'
+import Router from "vue-router";
 import vuetify from './plugins/vuetify';
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import '@mdi/font/css/materialdesignicons.css'
@@ -10,6 +11,10 @@ import { g, setTitle } from "./util";
 Vue.config.productionTip = false
 
 Vue.use(VueDisqus);
+Vue.use(Router);
+
+const router = new Router(routerOptions);
+activateVLink(router);
 
 (async () => {
   const r = await (await fetch("/api/user/", {
@@ -25,11 +30,15 @@ Vue.use(VueDisqus);
 
   g.user = r.data[0] || g.user;
 
+  if (!g.user._id) {
+    alert("Please create a new user first.")
+  }
+
   setTitle();
 
   new Vue({
     router,
     vuetify,
-    render: h => h(App)
+    render: h => h(Index)
   }).$mount('#app');
 })().catch(console.error);;

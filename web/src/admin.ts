@@ -1,6 +1,7 @@
 import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
+import Admin from './pages/Admin.vue'
+import {routerOptions, activateVLink} from './router'
+import Router from "vue-router";
 import vuetify from './plugins/vuetify';
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import '@mdi/font/css/materialdesignicons.css'
@@ -48,6 +49,23 @@ Vue.use(VueCodemirror, {
   }
 });
 
+Vue.use(Router);
+
+routerOptions.routes!.push(
+  {path: "/admin", redirect: "/admin/post/view"},
+  {
+    path: "/admin/post/edit",
+    component: () => import(/* webpackChunkName: "PostEdit" */ './views/PostEdit.vue')
+  },
+  {
+    path: "/admin/post/view",
+    component: () => import(/* webpackChunkName: "PostView" */ './views/PostView.vue')
+  },
+);
+
+const router = new Router(routerOptions);
+activateVLink(router);
+
 (async () => {
   const r = await (await fetch("/api/user/", {
     method: "POST",
@@ -65,6 +83,6 @@ Vue.use(VueCodemirror, {
   new Vue({
     router,
     vuetify,
-    render: h => h(App)
+    render: h => h(Admin)
   }).$mount('#app');
 })().catch(console.error);

@@ -1,8 +1,22 @@
+const fs = require("fs");
+const dotenv = require("dotenv");
+
+dotenv.config({
+  path: "../.env"
+});
+
+process.env.VUE_APP_ABOUT = fs.readFileSync("../about.md", "utf-8");
+process.env.VUE_APP_MODE = process.env.MONGO_URI
+  ? "mongo"
+  : process.env.FILENAME ? "local" : "electron";
+
 module.exports = {
-  publicPath: '',
   pages: {
-    index: "src/main.ts",
-    reveal: "src/reveal.ts"
+    index: "src/index.ts",
+    reveal: "src/reveal.ts",
+    ...(process.env.NODE_ENV === "development" || !process.env.MONGO_URI ? {
+      admin: "src/admin.ts"
+    } : {})
   },
   devServer: {
     port: 9000,
@@ -10,6 +24,12 @@ module.exports = {
       "^/api": {
         target: "http://localhost:24000"
       }
+    },
+    historyApiFallback: {
+      rewrites: [
+        { from: /\/reveal/, to: '/reveal.html' },
+        { from: /\/admin/, to: '/admin.html' }
+      ]
     }
   }
 }

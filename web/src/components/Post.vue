@@ -3,9 +3,9 @@ v-card.ma-3
   .post--meta.pa-2
     .d-flex
       span
-        a(:href="dotProp.get(author, 'info.website') || '#'"): img.avatar(:src="author.image")
+        a(:href="dotProp.get(author, 'info.website') || '#'"): img.avatar(:src="author.picture")
       span.ml-3
-        a(:href="dotProp.get(author, 'info.website') || '#'") {{author.name}}
+        a(:href="dotProp.get(author, 'info.website') || '#'") {{dotProp.get(author, 'info.name')}}
       span(style="flex-grow: 1")
       span {{dateString}}
   v-card-title.v-link(@click="to ? $router.push(to) : undefined") {{title}}
@@ -70,6 +70,7 @@ export default class Post extends Vue {
   get author() {
     const author = this.matter.data ? this.matter.data.author : null;
     if (!author) {
+      console.log(g.user)
       return g.user;
     }
 

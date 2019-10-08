@@ -1,16 +1,11 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Router, { RouterOptions } from 'vue-router'
 
-Vue.use(Router)
-
-const router = new Router({
+export const routerOptions: RouterOptions = {
+  mode: "history",
   routes: [
     {
       path: '/resource',
       name: 'resource',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "resource" */ './views/Resource.vue')
     },
     {
@@ -59,18 +54,18 @@ const router = new Router({
       return { x: 0, y: 0 }
     }
   }
-})
+}
 
-document.addEventListener("mouseover", (ev) => {
-  const { target } = ev;
-  if (target instanceof HTMLAnchorElement && target.matches(".v-link")) {
-    if (!target.href) {
-      const to = target.getAttribute("to")
-      if (to) {
-        target.href = router.resolve(to).href;
+export function activateVLink(router: Router) {
+  document.addEventListener("mouseover", (ev) => {
+    const { target } = ev;
+    if (target instanceof HTMLAnchorElement && target.matches(".v-link")) {
+      if (!target.href) {
+        const to = target.getAttribute("to")
+        if (to) {
+          target.href = router.resolve(to).href;
+        }
       }
     }
-  }
-});
-
-export default router;
+  });
+}

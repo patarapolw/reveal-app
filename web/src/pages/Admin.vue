@@ -2,53 +2,38 @@
 v-app
   v-navigation-drawer(v-model="isDrawer" :clipped="$vuetify.breakpoint.lgAndUp" app)
     v-list(dense)
-      v-list-group(:value="$route.path.startsWith('/post')")
+      v-list-group(:value="$route.path.startsWith('/admin/post')")
         template(v-slot:activator)
           v-list-item-avatar
             v-icon mdi-newspaper
           v-list-item-content
             v-list-item-title Posts
-        v-list-item(to="/post/view")
+        v-list-item(to="/admin/post/view")
           v-list-item-avatar.ml-3
               v-icon mdi-view-list
           v-list-item-content
             v-list-item-title View entries
-        v-list-item(to="/post/edit")
+        v-list-item(to="/admin/post/edit")
           v-list-item-avatar.ml-3
               v-icon mdi-pencil-outline
           v-list-item-content
             v-list-item-title Edit entry
-      v-list-group(:value="$route.path.startsWith('/media')")
+      v-list-group(:value="$route.path.startsWith('/admin/media')")
         template(v-slot:activator)
           v-list-item-avatar
             v-icon mdi-image-size-select-actual
           v-list-item-content
             v-list-item-title Media
-        v-list-item(to="/media/view")
+        v-list-item(to="/admin/media/view")
           v-list-item-avatar.ml-3
               v-icon mdi-view-list
           v-list-item-content
             v-list-item-title View entries
-        v-list-item(to="/media/edit")
+        v-list-item(to="/admin/media/edit")
           v-list-item-avatar.ml-3
               v-icon mdi-pencil-outline
           v-list-item-content
             v-list-item-title Edit entry
-      //- v-list-item(to="/blog")
-      //-   v-list-item-avatar
-      //-     v-icon mdi-calendar-edit
-      //-   v-list-item-content
-      //-     v-list-item-title Blog
-      //- v-list-item(to="/resource")
-      //-   v-list-item-avatar
-      //-     v-icon mdi-sitemap
-      //-   v-list-item-content
-      //-     v-list-item-title Resources
-      //- v-list-item(to="/present")
-      //-   v-list-item-avatar
-      //-       v-icon mdi-play-box-outline
-      //-   v-list-item-content
-      //-     v-list-item-title Presentations
       //- v-list-group(:value="$route.path.startsWith('/quiz')")
       //-   template(v-slot:activator)
       //-     v-list-item-avatar
@@ -91,7 +76,7 @@ v-app
     .flex-grow-1
     v-text-field.col-lg-4(flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"
       v-model="g.q" @keydown="onSearchKeydown")
-    v-btn.ml-3(light href="http://localhost:9000" target="_blank")
+    v-btn.ml-3(light href="/" target="_blank")
       v-icon mdi-open-in-new
       | Open Website
   v-content(fluid fill-height)
@@ -123,7 +108,7 @@ v-app
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { g, setTitle } from "./util";
+import { g } from "../util";
 import dotProp from "dot-prop";
 import { IUser } from "@reveal-app/abstract-db";
 
@@ -132,7 +117,7 @@ export default class App extends Vue {
   private isDrawer: boolean = this.$vuetify.breakpoint.lgAndUp;
   private g = g;
 
-  private isElectron = !!process.env.VUE_APP_ELECTRON;
+  private mode = process.env.VUE_APP_MODE;
   private isNewUser = false;
 
   mounted() {
@@ -142,17 +127,17 @@ export default class App extends Vue {
       input.autocomplete = "off";
     });
 
-    if (!g.user._id) {
+    if (!g.user._id && process.env.VUE_APP_MODE !== "electron") {
       this.isNewUser = true;
     }
   }
 
   getUserDeep(path: string) {
-    return dotProp.get(g.user, path);
+    return dotProp.get(g.user || {}, path);
   }
 
   setUserDeep(path: string, value: string) {
-    dotProp.set(g.user, path, value);
+    dotProp.set(g.user || {}, path, value);
     this.$set(this.g, "user", g.user);
   }
 
