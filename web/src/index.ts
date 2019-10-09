@@ -13,6 +13,49 @@ Vue.config.productionTip = false
 Vue.use(VueDisqus);
 Vue.use(Router);
 
+routerOptions.routes = routerOptions.routes || [];
+routerOptions.routes.push(
+  {
+    path: '/resource',
+    name: 'resource',
+    component: () => import(/* webpackChunkName: "resource" */ './views/Resource.vue')
+  },
+  {
+    path: '/present',
+    name: 'present',
+    component: () => import(/* webpackChunkName: "present" */ './views/Present.vue')
+  },
+  {
+    path: "/blog",
+    alias: "/",
+    component: () => import(/* webpackChunkName: "blog" */ './views/Blog.vue'),
+    children: [
+      {
+        path: "",
+        name: "blog_home",
+      },
+      {
+        path: "tag/:tag",
+        name: "blog_tag",
+      },
+    ]
+  },
+  {
+    path: "/post",
+    component: () => import(/* webpackChunkName: "single" */ './views/Single.vue'),
+    children: [
+      {
+        path: "",
+        name: "blog_p_query"
+      },
+      {
+        path: ":y/:mo/:name",
+        name: "blog_p_date"
+      }
+    ]
+  }
+)
+
 const router = new Router(routerOptions);
 activateVLink(router);
 

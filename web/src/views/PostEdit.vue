@@ -77,6 +77,19 @@ export default class BlogEdit extends Vue {
 
     await this.load();
     this.onTitleChange();
+
+    window.onbeforeunload = (e: any) => {
+      console.log(e);
+      const msg = this.canSave ? "Please save before leaving." : null;
+      if (msg) {
+        e.returnValue = msg;
+        return msg;
+      }
+    }
+  }
+
+  async destroyed() {
+    window.onbeforeunload = null;
   }
 
   get codemirror(): CodeMirror.Editor {

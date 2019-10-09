@@ -9,12 +9,14 @@ process.env.VUE_APP_ABOUT = fs.readFileSync("../about.md", "utf-8");
 process.env.VUE_APP_MODE = process.env.MONGO_URI
   ? "mongo"
   : process.env.FILENAME ? "local" : "electron";
+process.env.VUE_APP_IS_ADMIN = process.env.VUE_IS_ADMIN || 
+  ((process.env.NODE_ENV === "development" || !process.env.MONGO_URI) ? "1" : undefined);
 
 module.exports = {
   pages: {
     index: "src/index.ts",
     reveal: "src/reveal.ts",
-    ...(process.env.NODE_ENV === "development" || !process.env.MONGO_URI ? {
+    ...(process.env.VUE_APP_IS_ADMIN ? {
       admin: "src/admin.ts"
     } : {})
   },

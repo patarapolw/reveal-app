@@ -51,7 +51,8 @@ Vue.use(VueCodemirror, {
 
 Vue.use(Router);
 
-routerOptions.routes!.push(
+routerOptions.routes = routerOptions.routes || []
+routerOptions.routes.push(
   {path: "/admin", redirect: "/admin/post/view"},
   {
     path: "/admin/post/edit",

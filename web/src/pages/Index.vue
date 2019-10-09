@@ -17,6 +17,11 @@ v-app
           v-icon mdi-play-box-outline
         v-list-item-content
           v-list-item-title Presentations
+      v-list-item(v-if="isAdmin" href="/admin")
+        v-list-item-avatar
+          v-icon mdi-account-supervisor-circle
+        v-list-item-content
+          v-list-item-title Admin
       v-list-item(href="https://github.com/patarapolw/reveal-app" target="_blank")
         v-list-item-avatar
           v-icon mdi-github-circle
@@ -51,6 +56,8 @@ import dotProp from "dot-prop";
 export default class Index extends Vue {
   private isDrawer: boolean = this.$vuetify.breakpoint.lgAndUp;
   private g = g;
+
+  private isAdmin = process.env.VUE_APP_IS_ADMIN;
 
   mounted() {
     Array.from(document.getElementsByTagName("input")).forEach((input) => {
