@@ -5,7 +5,6 @@ import postRouter from "./post";
 import mediaRouter from "./media";
 import { g } from "../config";
 import OnlineDb from "@reveal-app/online-db";
-import SqliteDb from "@reveal-app/sqlite-db";
 import userRouter from "./user";
 
 const apiRouter = Router();
@@ -31,9 +30,10 @@ apiRouter.put("/", async (req, res, next) => {
 
     if (filename.startsWith("mongodb://") || filename.startsWith("mongodb+srv://")) {
       g.db = await new OnlineDb(filename).connect();
-    } else {
-      g.db = await new SqliteDb(filename).connect();
     }
+    // else {
+    //   g.db = await new SqliteDb(filename).connect();
+    // }
 
     return res.sendStatus(201);
   } catch(e) {

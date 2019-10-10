@@ -8,9 +8,10 @@ v-card.ma-3
         a(:href="dotProp.get(author, 'info.website') || '#'") {{dotProp.get(author, 'info.name')}}
       span(style="flex-grow: 1")
       span {{dateString}}
-  v-card-title.v-link(@click="to ? $router.push(to) : undefined") {{title}}
+  v-card-title
+    router-link(:to="to") {{title}}
   v-card-text
-    div(v-html="html")
+    raw(:code="html")
 </template>
 
 <script lang="ts">
@@ -18,24 +19,12 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 import moment from "moment";
 import matter from "gray-matter";
 import { g } from '../util';
-import MakeHTML from "@reveal-app/make-html";
 import dotProp from "dot-prop";
+import Raw from "./Raw.vue";
 
-let makeHTML: MakeHTML;
-
-try {
-  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"],
-    [slideExt, speakExt]
-  );
-} catch(e) {
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"]
-  );
-}
-
-@Component
+@Component({
+  components: {Raw}
+})
 export default class Post extends Vue {
   @Prop() id!: string;
   @Prop({default: false}) isTeaser!: boolean;
@@ -70,7 +59,6 @@ export default class Post extends Vue {
   get author() {
     const author = this.matter.data ? this.matter.data.author : null;
     if (!author) {
-      console.log(g.user)
       return g.user;
     }
 
@@ -89,9 +77,9 @@ export default class Post extends Vue {
   get html(): string {
     const { content } = this.matter;
     if (this.isTeaser) {
-      return makeHTML.compile(content.split(/\r?\n===\r?\n/)[0]).html
+      return content.split(/\r?\n===\r?\n/)[0];
     } else {
-      return makeHTML.compile(content.replace(/\r?\n===\r?\n/, "")).html;
+      return content;
     }
   }
 }

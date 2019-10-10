@@ -88,24 +88,3 @@ export default class Index extends Vue {
   }
 };
 </script>
-
-<style lang="scss">
-.v-link {
-  color: blue;
-  cursor: pointer;
-  text-decoration: none !important;
-}
-
-img {
-  max-width: 100%;
-}
-
-.h-100 {
-  max-height: calc(100vh - 64px);
-}
-
-iframe {
-  border: none;
-  border-width: 0;
-}
-</style>

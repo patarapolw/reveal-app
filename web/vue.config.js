@@ -20,6 +20,7 @@ module.exports = {
       admin: "src/admin.ts"
     } : {})
   },
+  runtimeCompiler: true,
   devServer: {
     port: 9000,
     proxy: {

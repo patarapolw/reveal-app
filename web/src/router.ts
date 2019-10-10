@@ -1,4 +1,5 @@
-import Router, { RouterOptions } from 'vue-router'
+import { RouterOptions } from 'vue-router';
+import "./index.scss";
 
 export const routerOptions: RouterOptions = {
   mode: "history",
@@ -14,18 +15,4 @@ export const routerOptions: RouterOptions = {
       return { x: 0, y: 0 }
     }
   }
-}
-
-export function activateVLink(router: Router) {
-  document.addEventListener("mouseover", (ev) => {
-    const { target } = ev;
-    if (target instanceof HTMLAnchorElement && target.matches(".v-link")) {
-      if (!target.href) {
-        const to = target.getAttribute("to")
-        if (to) {
-          target.href = router.resolve(to).href;
-        }
-      }
-    }
-  });
 }

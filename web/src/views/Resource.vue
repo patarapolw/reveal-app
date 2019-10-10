@@ -6,7 +6,7 @@ v-container.pa-0(style="height: 100%")
       open-on-click activatable return-object)
     v-divider(vertical)
     v-col.h-100(fixed style="overflow-y: scroll;" v-if="html")
-      div(style="width: 100%; white-space: pre-wrap;" v-html="html")
+      div(:code="html" style="width: 100%; white-space: pre-wrap;")
 </template>
 
 <script lang="ts">
@@ -15,23 +15,11 @@ import { normalizeArray, setTitle } from "../util";
 import ToNested, { ITreeViewItem } from "record-to-nested";
 import matter from "gray-matter";
 import dotProp from "dot-prop";
-import MakeHTML from "@reveal-app/make-html";
+import Raw from "../components/Raw.vue";
 
-let makeHTML: MakeHTML;
-
-try {
-  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"],
-    [slideExt, speakExt]
-  );
-} catch(e) {
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"]
-  );
-}
-
-@Component
+@Component({
+  components: {Raw}
+})
 export default class App extends Vue {
   private items: any[] = [];
   private open = [];
@@ -76,9 +64,7 @@ export default class App extends Vue {
       const data = await (await fetch(`/api/post/${this.id}`, {
           method: "POST"
         })).json();
-      this.html = makeHTML.compile(
-        matter(data.content).content
-      ).html;
+      this.html = matter(data.content).content;
     } else {
       this.html = "";
     }

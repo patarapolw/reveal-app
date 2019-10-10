@@ -33,6 +33,24 @@ export const toExt = {
       url = `${url}?${q.join("&")}`;
     }
 
-    return h("a.v-link", {attrs: {to: url}}, s).outerHTML;
+    return h("router-link", {attrs: {to: url}}, s).outerHTML;
+  })
+}
+
+export const srsExt = {
+  type: "lang",
+  filter: createIndentedFilter("^^srs", (key) => {
+    return h("div", [
+      h("v-btn.mx-2", {attrs: {
+        color: "primary",
+        put: "/api/post/srs/right", 
+        body: JSON.stringify({key})}
+      }, "Right"),
+      h("v-btn.mx-2", {attrs: {
+        color: "error",
+        put: "/api/post/srs/wrong", 
+        body: JSON.stringify({key})}
+      }, "Wrong")
+    ]).outerHTML;
   })
 }

@@ -14,7 +14,8 @@ v-container.h-100.d-flex.flex-column.pa-0
     v-col(:class="hasPreview ? 'col-6 pr-0' : 'col-12'")
       codemirror.h-100(ref="cm" v-model="code" :options="cmOptions" @input="onCmCodeChange")
     v-col(v-show="hasPreview" ref="previewHolder" style="width: 50%")
-      v-card.h-100.pa-3(v-if="!isReveal" v-html="html")
+      v-card.h-100.pa-3(v-if="!isReveal")
+        raw(:code="html" @lang="onLangChanged")
       iframe(v-show="isReveal" ref="iframe" frameborder="0" :src="iframeUrl")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
@@ -27,23 +28,11 @@ import matter from "gray-matter";
 import { clone, setTitle } from "../util";
 import { toDate } from "valid-moment";
 import { g } from '../util';
-import MakeHTML from "@reveal-app/make-html";
+import Raw from "../components/Raw.vue";
 
-let makeHTML: MakeHTML;
-
-try {
-  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"],
-    [slideExt, speakExt]
-  );
-} catch(e) {
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"]
-  );
-}
-
-@Component
+@Component({
+  components: {Raw}
+})
 export default class BlogEdit extends Vue {
   private code = "";
   private cmOptions = {
@@ -280,11 +269,12 @@ export default class BlogEdit extends Vue {
     try {
       const {data, content} = matter(newCode);
       Vue.set(this, "headers", data);
-      const {lang, html} = makeHTML.compile(content.replace(/\r?\n===\r?\n/, ""));
-
-      this.cmOptions.mode.base = lang;
-      this.html = html;
+      this.html = content;
     } catch(e) {}
+  }
+
+  onLangChanged(lang: string) {
+    this.cmOptions.mode.base = lang;
   }
 
   @Watch("headers.title")

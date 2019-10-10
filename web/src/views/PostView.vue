@@ -22,7 +22,7 @@ v-container.d-flex.flex-column.pa-0
       @click:row="clickRow")
       template(v-slot:expanded-item="{headers}")
         td(v-if="expanded[0]" :colspan="headers.length")
-          div(v-html="preview(expanded[0].content)" style="max-height: 300px; overflow: scroll")
+          raw(:code="preview(expanded[0].content)" style="max-height: 300px; overflow: scroll")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
@@ -41,23 +41,11 @@ v-container.d-flex.flex-column.pa-0
 import { Vue, Component, Watch } from "vue-property-decorator";
 import matter from "gray-matter";
 import { g, setTitle } from '../util';
-import MakeHTML from "@reveal-app/make-html";
+import Raw from "../components/Raw.vue";
 
-let makeHTML: MakeHTML;
-
-try {
-  const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"],
-    [slideExt, speakExt]
-  );
-} catch(e) {
-  makeHTML = new MakeHTML(
-    ["yaml", "markdown", "json", "application/json"]
-  );
-}
-
-@Component
+@Component({
+  components: {Raw}
+})
 export default class BlogView extends Vue {
   private g = g;
   private selected: string[] = [];
@@ -131,8 +119,7 @@ export default class BlogView extends Vue {
 
   preview(raw: string): string {
     const {content} = matter(raw);
-    const {html} = makeHTML.compile(content.split(/\r?\n(===|---)\r?\n/)[0]);
-    return html;
+    return content.split(/\r?\n(===|---)\r?\n/)[0];
   }
 
   @Watch("g.q")

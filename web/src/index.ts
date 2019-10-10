@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Index from './pages/Index.vue'
-import {routerOptions, activateVLink} from './router'
+import {routerOptions} from './router'
 import Router from "vue-router";
 import vuetify from './plugins/vuetify';
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
@@ -57,7 +57,6 @@ routerOptions.routes.push(
 )
 
 const router = new Router(routerOptions);
-activateVLink(router);
 
 (async () => {
   const r = await (await fetch("/api/user/", {

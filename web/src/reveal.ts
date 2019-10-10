@@ -36,7 +36,7 @@ declare const Reveal: any;
       trueCode = lines.slice(1).join("\n");
     }
 
-    const slides = trueCode.split(/^---$/gm).map((slideGroup) => {
+    const slides = trueCode.split(/^(---|===)$/gm).map((slideGroup) => {
       return slideGroup.split(/^--$/gm).map((s) => {
         if (lang === "pug") {
           return makeHTML.pug(s);
