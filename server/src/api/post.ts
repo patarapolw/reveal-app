@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { g } from "../config";
-import { unUndefined, clone } from "../util";
+import { clone } from "../util";
 import { toDate } from "valid-moment";
 import matter from "gray-matter";
 
@@ -9,7 +9,7 @@ const postRouter = Router();
 postRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort, fields } = req.body;
-    const r = await g.db!.tables.post.findByQ(q || "", {
+    const r = await g.db!.tables.post.find(q || "", {
       offset,
       limit: limit || 10,
       sort,
@@ -27,7 +27,7 @@ postRouter.put("/", async (req, res, next) => {
     let { _id, newId, title, date, tag, content, hidden, type, deck } = req.body;
     const m = matter(content);
     content = matter.stringify(m.content, clone({...m.data, title, date, tag, hidden, type, deck}));
-    const payload = unUndefined({title, date: date ? toDate(date) : null, tag, content, hidden, type, deck });
+    const payload = {title, date: date ? toDate(date) || undefined : undefined, tag, content, hidden, type, deck };
     let outputId = _id || newId || undefined;
 
     if (!_id) {
@@ -37,7 +37,7 @@ postRouter.put("/", async (req, res, next) => {
       });
       outputId = p._id;
     } else {
-      await g.db!.tables.post.updateById(_id, {$set: payload});
+      await g.db!.tables.post.updateById(_id, payload);
     }
     
     return res.json({

@@ -1,55 +1,12 @@
-import crypto from 'crypto';
 import { ReturnModelType } from '@typegoose/typegoose';
-import UrlSafeString from "url-safe-string";
-import pinyin from "chinese-to-pinyin";
-import uuid4 from "uuid/v4";
-import { IFindByQOptions, IProjection, ITable } from '@reveal-app/abstract-db';
+import { IFindOptions, IProjection, Table } from '@reveal-app/abstract-db';
 import QParser, { IQParserOptions } from 'q2filter';
-import { AnyParamConstructor } from '@typegoose/typegoose/lib/types';
 
-const uss = new UrlSafeString({
-  regexRemovePattern: /((?!([a-z0-9.])).)/gi
-});
-
-export function generateSecret(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    crypto.randomBytes(48, (err, b) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(b.toString("base64"));
-    });
-  })
-}
-
-export async function getSafeId<T extends AnyParamConstructor<any>>(
-  model: ReturnModelType<T>, 
-  title?: string
-): Promise<string> {
-  const ids = (await model.find().select({ _id: 1 })).map((el: any) => el._id);
-  let outputId = title ? uss.generate(pinyin(title, {
-    keepRest: true, toneToNumber: true
-  })) : "";
-
-  while (ids.includes(outputId)) {
-    const m = /-(\d+)$/.exec(outputId);
-    let i = 1;
-
-    if (m) {
-      i = parseInt(m[1]) + 1;
-    }
-
-    outputId = `${outputId.replace(/-(\d+)$/, "")}-${i}`;
-  }
-
-  return outputId || uuid4();
-}
-
-export async function findByQ<T>(
+async function find<T>(
   model: ReturnModelType<any>,
   parserOptions: Partial<IQParserOptions<any>>,
-  q: string,
-  options: IFindByQOptions = {
+  q: string | Record<string, any>,
+  options: IFindOptions<T> = {
     offset: 0,
     limit: 10
   }
@@ -57,18 +14,27 @@ export async function findByQ<T>(
   data: T[];
   count: number;
 }> {
-  const parser = new QParser<any>(q, parserOptions);
+  let cond: Record<string, any>;
+  let sorter: Record<string, 1 | -1>;
 
-  const fullCond = parser.getCondFull();
-  const sort = fullCond.sortBy || options.sort;
+  if (typeof q === "string") {
+    const parser = new QParser<any>(q, parserOptions);
 
-  const sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {updatedAt: -1};
+    const fullCond = parser.getCondFull();
+    const sort = fullCond.sortBy || options.sort;
 
-  const count = await model.find(fullCond.cond).countDocuments();
-  let chain = model.find(fullCond.cond);
+    sorter = sort ? {[sort.key]: sort.desc ? -1 : 1} : {updatedAt: -1};
+    cond = fullCond.cond;
+  } else {
+    cond = q;
+    sorter = {updatedAt: -1};
+  }
+
+  const count = await model.find(cond).countDocuments();
+  let chain = model.find(cond);
 
   if (options.fields) {
-    let proj: IProjection = {};
+    let proj: IProjection<T> = {};
     if (Array.isArray(options.fields)) {
       for (const f of options.fields) {
         proj[f] = 1;
@@ -91,34 +57,60 @@ export async function findByQ<T>(
   return {count, data};
 }
 
-export function generateTable<T>(model: ReturnModelType<any>): ITable<T> {
-  return {
-    findByQ: model.findByQ,
-    create: async (entry: any) => {
-      return await model.create(entry)
-    },
-    getSafeId: model.getSafeId,
-    updateById: async (id: string, set: any) => {
-      await model.findByIdAndUpdate(id, set);
-    },
-    deleteById: async (id: string) => {
+export function generateTable<T>(
+  model: ReturnModelType<any>
+): Table<T> {
+  class NewTable extends Table<T> {
+    async find(q: string | Record<string, any>, options: IFindOptions<T & {_id: string}>): Promise<{
+      count: number;
+      data: Partial<T & {_id: string}>[];
+    }> {
+      return await find(model, model.searchOptions, q, options);
+    }
+
+    async create(entry: T): Promise<T & {_id: string}> {
+      return await model.create(entry);
+    }
+
+    async updateById(id: string, $set: Record<keyof T, any>) {
+      return await model.findByIdAndUpdate(id, {$set: unUndefined($set)});
+    }
+
+    async deleteById(id: string) {
       await model.findByIdAndDelete(id);
-    },
-    findById: async (id: string) => {
-      return await model.findById(id);
-    },
-    updateMany: async (cond: any, set: any) => {
-      await model.updateMany(cond, set);
-    },
-    addTags: async (ids: string[], tags: string[]) => {
-      await model.updateMany({_id: {$in: ids}}, {$addToSet: {
+    }
+
+    async updateMany(q: string | Record<string, any>, $set: Record<keyof T, any>) {
+      if (typeof q === "string") {
+        const ids = (await this.find(q, {
+          offset: 0,
+          fields: ["_id"]
+        })).data.map((el) => el._id) as string[];
+
+        return await model.updateMany({_id: {$in: ids}}, {$set: unUndefined($set)});
+      } else {
+        return await model.updateMany(q, {$set: unUndefined($set)});
+      }
+    }
+
+    async addTags(ids: string[], tags: string[]) {
+      return await model.updateMany({_id: {$in: ids}}, {$addToSet: {
         tag: {$each: tags}
       }});
-    },
-    removeTags: async (ids: string[], tags: string[]) => {
-      await model.updateMany({_id: {$in: ids}}, {$pull: {
+    }
+
+    async removeTags(ids: string[], tags: string[]) {
+      return await model.updateMany({_id: {$in: ids}}, {$pull: {
         tag: {$in: tags}
       }});
     }
   }
+
+  return new NewTable();
+}
+
+export function unUndefined(obj: any, isNull: any[] = [""]) {
+  const nullSet = new Set([...(isNull || []), undefined])
+  Object.keys(obj).forEach(key => nullSet.has(obj[key]) ? delete obj[key] : undefined);
+  return obj;
 }

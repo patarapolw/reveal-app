@@ -1,5 +1,7 @@
 import { RouterOptions } from 'vue-router';
-import "./index.scss";
+import "./vue.scss";
+import "./global.scss";
+import "./global";
 
 export const routerOptions: RouterOptions = {
   mode: "history",

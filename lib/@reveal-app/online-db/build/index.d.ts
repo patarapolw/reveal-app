@@ -1,5 +1,10 @@
-import { Ref, DocumentType } from "@typegoose/typegoose";
-import AbstractDb, { IPost, IFindByQOptions, IMedia, IUser } from "@reveal-app/abstract-db";
+import { Ref } from "@typegoose/typegoose";
+import AbstractDb, { IPost, IMedia, IUser, ICard, IQuiz } from "@reveal-app/abstract-db";
+import { IQParserOptions } from "q2filter";
+declare type ISearchOptions<T> = Partial<IQParserOptions<T & {
+    createdAt: Date;
+    updatedAt: Date;
+}>>;
 declare class User implements IUser {
     _id: string;
     type?: string;
@@ -21,11 +26,7 @@ declare class User implements IUser {
         hint?: string;
     };
     tag: string[];
-    static getSafeId(title?: string): Promise<string>;
-    static findByQ(q: string, options?: IFindByQOptions): Promise<{
-        data: User[];
-        count: number;
-    }>;
+    static searchOptions: ISearchOptions<any>;
 }
 declare class Post implements IPost {
     _id: string;
@@ -35,46 +36,40 @@ declare class Post implements IPost {
     type?: string;
     deck?: string;
     content: string;
-    static getSafeId(title?: string): Promise<string>;
-    static findByQ(q: string, options?: IFindByQOptions): Promise<{
-        data: Post[];
-        count: number;
-    }>;
+    static searchOptions: ISearchOptions<Post>;
 }
 declare class Media implements IMedia {
     _id: string;
     name: string;
     tag: string[];
     data: ArrayBuffer;
-    static getSafeId(title?: string): Promise<string>;
-    static findByQ(q: string, options?: IFindByQOptions): Promise<{
-        data: Media[];
-        count: number;
-    }>;
+    static searchOptions: ISearchOptions<Media>;
 }
-declare class Card {
+declare class Card implements ICard {
+    _id: string;
     key: string;
     front: string;
     back?: string;
     tag: string[];
+    static searchOptions: ISearchOptions<Card>;
 }
-declare class Quiz {
+declare class Quiz implements IQuiz {
     user: Ref<User>;
     card: Ref<Card>;
     note?: string;
-    srsLevel?: number;
-    nextReview?: Date;
+    srsLevel: number;
+    nextReview: Date;
     tag: string[];
-    stat?: {
+    stat: {
         streak: {
             right: number;
             wrong: number;
         };
     };
+    static searchOptions: ISearchOptions<Quiz>;
 }
 export default class OnlineDb extends AbstractDb {
     private mongoUri;
-    currentUser?: DocumentType<User>;
     models: {
         post: import("@typegoose/typegoose").ReturnModelType<typeof Post, unknown>;
         media: import("@typegoose/typegoose").ReturnModelType<typeof Media, unknown>;
@@ -83,20 +78,14 @@ export default class OnlineDb extends AbstractDb {
         quiz: import("@typegoose/typegoose").ReturnModelType<typeof Quiz, unknown>;
     };
     tables: {
-        post: import("@reveal-app/abstract-db").ITable<Post>;
-        media: import("@reveal-app/abstract-db").ITable<Media>;
-        user: import("@reveal-app/abstract-db").ITable<User>;
+        post: import("@reveal-app/abstract-db").Table<Post>;
+        media: import("@reveal-app/abstract-db").Table<Media>;
+        user: import("@reveal-app/abstract-db").Table<User>;
+        card: import("@reveal-app/abstract-db").Table<Card>;
+        quiz: import("@reveal-app/abstract-db").Table<Quiz>;
     };
-    constructor(mongoUri: string);
+    constructor(mongoUri: string, isLocal?: boolean);
     connect(): Promise<this>;
-    signup(email: string, password: string, options?: {
-        picture?: string;
-    }): Promise<string>;
-    getSecret(): Promise<string | null>;
-    newSecret(): Promise<string | null>;
-    parseSecret(secret: string): Promise<boolean>;
-    login(email: string, secret: string): Promise<boolean>;
-    logout(): Promise<boolean>;
     close(): Promise<this>;
     reset(): Promise<void>;
 }

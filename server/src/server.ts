@@ -52,7 +52,7 @@ app.listen(port, async () => {
   //   g.db = await new SqliteDb(process.env.FILENAME).connect();
   // } else 
   if (process.env.MONGO_URI) {
-    g.db = await new OnlineDb(process.env.MONGO_URI).connect();
+    g.db = await new OnlineDb(process.env.MONGO_URI, true).connect();
   }
   console.log(`Server running on http://localhost:${port}`);
 });

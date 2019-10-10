@@ -15,13 +15,15 @@ if (process.env.MONGO_URI) {
       (async () => {
         if (g.db instanceof OnlineDb) {
           const db = g.db!;
-          const result = await db.login(email, password);
+          await db.login(email, password);
+
+          const userId = db.user.userId;
       
-          if (!result || !db.currentUser) {
+          if (!userId) {
             return done(null, false, { message: "No login or password is invalid" });;
           }
       
-          return done(null, db.currentUser.id);
+          return done(null, userId);
         }
       })().catch(done);
     } else {

@@ -1,0 +1,18 @@
+.button {
+  font-family: sans-serif;
+  padding: .5em;
+  margin: .5em;
+  border-radius: .5em;
+  min-width: 5em;
+  box-shadow: 0 .5em .2em -.2em rgba(0,0,0,.2);
+  cursor: pointer;
+
+  &:disabled {
+    background-color: lightgray !important;
+    cursor: auto;
+  }
+}
+
+.v-speak {
+  cursor: pointer;
+}

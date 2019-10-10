@@ -120,6 +120,7 @@ export default class BlogEdit extends Vue {
       ...this.$route.query,
       preview: (!this.hasPreview).toString()
     }});
+    // this.hasPreview = !this.hasPreview;
   }
 
   resizeIFrame() {

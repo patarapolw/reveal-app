@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { g } from "../config";
-import { unUndefined } from "../util";
 import fileUpload, { UploadedFile } from "express-fileupload";
 
 const mediaRouter = Router();
@@ -9,7 +8,7 @@ mediaRouter.use(fileUpload());
 mediaRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort, fields } = req.body;
-    const r = await g.db!.tables.media.findByQ(q || "", {
+    const r = await g.db!.tables.media.find(q || "", {
       offset,
       limit: limit || 10,
       sort,
@@ -26,7 +25,7 @@ mediaRouter.put("/", async (req, res, next) => {
   try {
     const file = req.files!.file as UploadedFile;
     const { _id, newId, tag } = req.body;
-    const payload = unUndefined({name: file.name, data: file.data, tag});
+    const payload = {name: file.name, data: file.data, tag};
     let outputId = _id || newId || undefined;
 
     if (!_id) {
@@ -36,7 +35,7 @@ mediaRouter.put("/", async (req, res, next) => {
       });
       outputId = p._id;
     } else {
-      await g.db!.tables.media.updateById(_id, {$set: payload});
+      await g.db!.tables.media.updateById(_id, payload);
     }
     
     return res.json({

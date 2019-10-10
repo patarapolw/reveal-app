@@ -1,3 +1,5 @@
+import { generateSecret } from "./util";
+export { generateSecret };
 export interface IUser {
     _id: string;
     type?: string;
@@ -35,42 +37,89 @@ export interface IMedia {
     data: ArrayBuffer;
     tag: string[];
 }
+export interface ICard {
+    _id: string;
+    key: string;
+    front: string;
+    back?: string;
+    tag: string[];
+}
+export interface IQuiz {
+    user?: any;
+    card: any;
+    note?: string;
+    srsLevel: number;
+    nextReview: Date;
+    tag: string[];
+    stat: {
+        streak: {
+            right: number;
+            wrong: number;
+        };
+    };
+}
 export interface ISortOptions<T> {
     key: keyof T;
     desc: boolean;
 }
-export interface IProjection {
-    [k: string]: 1 | 0;
-}
-export interface IFindByQOptions {
+export declare type IProjection<T> = Partial<Record<keyof T, 1 | 0>>;
+export interface IFindOptions<T> {
     offset: number;
     limit?: number;
-    sort?: ISortOptions<IPost>;
-    fields?: string[] | IProjection;
+    sort?: ISortOptions<T>;
+    fields?: Array<keyof T> | IProjection<T>;
 }
-export interface ITable<T> {
-    findByQ(q: string, options: IFindByQOptions): Promise<{
+export declare abstract class Table<T> {
+    abstract find(q: string | Record<string, any>, options: IFindOptions<T & {
+        _id: string;
+    }>): Promise<{
         count: number;
-        data: Partial<T>[];
+        data: Partial<T & {
+            _id: string;
+        }>[];
     }>;
-    create(entry: T): Promise<T>;
-    updateById(id: string, set: any): Promise<void>;
-    findById(id: string): Promise<T | null>;
-    deleteById(id: string): Promise<void>;
-    updateMany(cond: any, op: any): Promise<void>;
-    addTags(ids: string[], tags: string[]): Promise<void>;
-    removeTags(ids: string[], tags: string[]): Promise<void>;
+    abstract create(entry: T): Promise<T & {
+        _id: string;
+    }>;
+    abstract updateById(id: string, set: Partial<Record<keyof T, any>>): Promise<any>;
+    abstract deleteById(id: string): Promise<any>;
+    abstract updateMany(q: string | Record<string, any>, set: Partial<Record<keyof T, any>>): Promise<any>;
+    abstract addTags(ids: string[], tags: string[]): Promise<any>;
+    abstract removeTags(ids: string[], tags: string[]): Promise<any>;
     getSafeId(src: string): Promise<string>;
+    findOne(q: string | Record<string, any>): Promise<T | null>;
+    findById(id: string): Promise<T | null>;
 }
 export interface ITables {
-    user: ITable<IUser>;
-    post: ITable<IPost>;
-    media: ITable<IMedia>;
+    user: Table<IUser>;
+    post: Table<IPost>;
+    media: Table<IMedia>;
+    card: Table<ICard>;
+    quiz: Table<IQuiz>;
 }
 export default abstract class AbstractDb {
+    private isLocal;
+    abstract tables: ITables;
+    abstract models: Record<keyof ITables, any>;
+    private _user;
+    constructor(isLocal?: boolean);
+    readonly user: UserDb;
     abstract connect(): Promise<this>;
     abstract close(): Promise<this>;
-    abstract tables: ITables;
-    abstract models: Record<string, any>;
+    signup(email: string, password?: string | null, options?: Partial<IUser>): Promise<IUser>;
+    login(email: string, secret: string): Promise<void>;
+    logout(): void;
+    newSecret(): Promise<string>;
+    getSecret(): Promise<string>;
+    parseSecret(secret: string): Promise<void>;
+}
+declare class UserDb {
+    db: AbstractDb;
+    private user?;
+    constructor(db: AbstractDb, user?: any);
+    readonly userId: string | null;
+    markRight(card: string | Partial<ICard>): Promise<string>;
+    markWrong(card: string | Partial<ICard>): Promise<string>;
+    updateSrsLevel(dSrsLevel: number, card: string | Partial<ICard>): Promise<string>;
 }
 //# sourceMappingURL=index.d.ts.map

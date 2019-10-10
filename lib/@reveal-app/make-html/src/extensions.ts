@@ -7,7 +7,7 @@ export const simpleTableExt = {
     const rowRegex = /(?:(?:^|\r?\n)(?:\| )?(?:(?:.* \| )+.+)*(?:.* \| )+.+(?: \|)?(?:$|\r?\n))+/m;
 
     text = text.replace(rowRegex, (p0) => {
-      return h("table", p0.trim().split("\n").map((pi) => {
+      return h("table.table", p0.trim().split("\n").map((pi) => {
         pi = pi.trim().replace(/^|/, "").replace(/|$/, "")
 
         return h("tr", pi.split(" | ").map((x) => x.trim()).map((qi) => {
@@ -41,15 +41,15 @@ export const srsExt = {
   type: "lang",
   filter: createIndentedFilter("^^srs", (key) => {
     return h("div", [
-      h("v-btn.mx-2", {attrs: {
-        color: "primary",
-        put: "/api/post/srs/right", 
-        body: JSON.stringify({key})}
+      h("button.button", {
+        style: "color: white; background-color:green;",
+        type: "button",
+        attrs: {onclick: `fetchJSON('/api/quiz/right', {key: '${key}'}, 'PUT'); this.disabled = true;`}
       }, "Right"),
-      h("v-btn.mx-2", {attrs: {
-        color: "error",
-        put: "/api/post/srs/wrong", 
-        body: JSON.stringify({key})}
+      h("button.button", {
+        style: "color: white; background-color:red;",
+        type: "button", 
+        attrs: {onclick: `fetchJSON('/api/quiz/wrong', {key: '${key}'}, 'PUT'); this.disabled = true;`}
       }, "Wrong")
     ]).outerHTML;
   })

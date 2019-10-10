@@ -20,7 +20,10 @@
     "baseUrl": ".",
     "typeRoots": [
       "@types"
-    ]
+    ],
+    "paths": {
+      "*": ["../../@types/*"]
+    }
   },
   "include": [
     "src/**/*"

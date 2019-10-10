@@ -1,13 +1,12 @@
 import { Router } from "express";
 import { g } from "../config";
-import { unUndefined } from "../util";
 
 const userRouter = Router();
 
 userRouter.post("/", async (req, res, next) => {
   try {
     let { q, offset, limit, sort, fields } = req.body;
-    const r = await g.db!.tables.user.findByQ(q || "", {
+    const r = await g.db!.tables.user.find(q || "", {
       offset,
       limit: limit || 10,
       sort,
@@ -22,8 +21,8 @@ userRouter.post("/", async (req, res, next) => {
 
 userRouter.put("/", async (req, res, next) => {
   try {
-    let { _id, type, email, picture, secret, info, web } = req.body;
-    const payload = unUndefined({type, email, picture, secret, info, web});
+    let { _id, type, email, picture, secret, info, web, tag } = req.body;
+    const payload = {type, email, picture, secret, info, web, tag};
     let outputId = _id || undefined;
 
     if (!_id) {
@@ -33,7 +32,7 @@ userRouter.put("/", async (req, res, next) => {
       });
       outputId = p._id;
     } else {
-      await g.db!.tables.user.updateById(_id, {$set: payload});
+      await g.db!.tables.user.updateById(_id, payload);
     }
     
     return res.json({

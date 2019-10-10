@@ -1,7 +1,7 @@
 import showdown from "showdown";
 import h from "hyperscript";
 import pug, { IHyperPugFilters } from "hyperpug";
-import { simpleTableExt, toExt } from "./extensions";
+import { simpleTableExt, toExt, srsExt } from "./extensions";
 
 export class Markdown {
   private converter: showdown.Converter;
@@ -9,7 +9,7 @@ export class Markdown {
   constructor(ext: showdown.ShowdownExtension[] = []) {
     this.converter = new showdown.Converter({
       parseImgDimensions: true,
-      extensions: [simpleTableExt, toExt, ...ext]
+      extensions: [simpleTableExt, toExt, srsExt, ...ext]
     });
     this.converter.setFlavor("github");
   }
