@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "outDir": "./build",
     "moduleResolution": "node",
     "strict": true,
@@ -20,13 +20,7 @@
     "baseUrl": ".",
     "typeRoots": [
       "@types"
-    ],
-    "types": [
-      "node"
-    ],
-    "paths": {
-      "*": ["../@types/*"]
-    }
+    ]
   },
   "include": [
     "src/**/*"
