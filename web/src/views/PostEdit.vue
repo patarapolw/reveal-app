@@ -16,7 +16,9 @@ v-container.h-100.d-flex.flex-column.pa-0
     v-col(v-show="hasPreview" ref="previewHolder" style="width: 50%")
       v-card.h-100.pa-3(v-if="!isReveal")
         raw(:code="html" @lang="onLangChanged")
-      iframe(v-show="isReveal" ref="iframe" frameborder="0" :src="iframeUrl")
+      v-card(v-else ref="iframe" style="height: 80vh")
+        eagle(:content="html" @lang="onLangChanged")
+      //- iframe(v-show="isReveal" ref="iframe" frameborder="0" :src="iframeUrl")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
@@ -29,9 +31,13 @@ import { clone, setTitle } from "../util";
 import { toDate } from "valid-moment";
 import { g } from '../util';
 import Raw from "../components/Raw.vue";
+import Eagle from "../components/Eagle.vue";
+import CodeMirror from "codemirror";
 
 @Component({
-  components: {Raw}
+  components: {
+    Raw, Eagle
+  }
 })
 export default class BlogEdit extends Vue {
   private code = "";
@@ -116,11 +122,11 @@ export default class BlogEdit extends Vue {
   }
   
   onTogglePreviewClicked() {
-    this.$router.push({query: {
-      ...this.$route.query,
-      preview: (!this.hasPreview).toString()
-    }});
-    // this.hasPreview = !this.hasPreview;
+    // this.$router.push({query: {
+    //   ...this.$route.query,
+    //   preview: (!this.hasPreview).toString()
+    // }});
+    this.hasPreview = !this.hasPreview;
   }
 
   resizeIFrame() {
@@ -136,8 +142,8 @@ export default class BlogEdit extends Vue {
         const iframe = this.$refs.iframe as HTMLIFrameElement;
         if (iframe && iframeHolder) {
           const sqWidth = Math.min(iframeHolder.clientHeight, iframeHolder.clientWidth) * 0.95;
-          iframe.style.maxHeight = `${sqWidth}px`;
-          iframe.style.maxWidth = `${sqWidth}px`;
+          iframe.style.height = `${sqWidth}px`;
+          iframe.style.width = `${sqWidth}px`;
         }
       } else {
       }

@@ -2,6 +2,14 @@ import { RouterOptions } from 'vue-router';
 import "./vue.scss";
 import "./global.scss";
 import "./global";
+import Vue from 'vue';
+import Router from "vue-router";
+import 'roboto-fontface/css/roboto/roboto-fontface.css';
+import '@mdi/font/css/materialdesignicons.css';
+
+Vue.config.productionTip = false
+
+Vue.use(Router);
 
 export const routerOptions: RouterOptions = {
   mode: "history",

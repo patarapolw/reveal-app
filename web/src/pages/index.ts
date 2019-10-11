@@ -1,34 +1,29 @@
 import Vue from 'vue'
-import Index from './pages/Index.vue'
-import {routerOptions} from './router'
+import Index from './Index.vue'
+import { routerOptions } from '../shared'
 import Router from "vue-router";
-import vuetify from './plugins/vuetify';
-import 'roboto-fontface/css/roboto/roboto-fontface.css'
-import '@mdi/font/css/materialdesignicons.css'
+import vuetify from '../plugins/vuetify';
 import VueDisqus from "vue-disqus";
-import { g, setTitle } from "./util";
-
-Vue.config.productionTip = false
+import { g, setTitle } from "../util";
 
 Vue.use(VueDisqus);
-Vue.use(Router);
 
 routerOptions.routes = routerOptions.routes || [];
 routerOptions.routes.push(
   {
     path: '/resource',
     name: 'resource',
-    component: () => import(/* webpackChunkName: "resource" */ './views/Resource.vue')
+    component: () => import(/* webpackChunkName: "resource" */ '../views/Resource.vue')
   },
   {
     path: '/present',
     name: 'present',
-    component: () => import(/* webpackChunkName: "present" */ './views/Present.vue')
+    component: () => import(/* webpackChunkName: "present" */ '../views/Present.vue')
   },
   {
     path: "/blog",
     alias: "/",
-    component: () => import(/* webpackChunkName: "blog" */ './views/Blog.vue'),
+    component: () => import(/* webpackChunkName: "blog" */ '../views/Blog.vue'),
     children: [
       {
         path: "",
@@ -42,7 +37,7 @@ routerOptions.routes.push(
   },
   {
     path: "/post",
-    component: () => import(/* webpackChunkName: "single" */ './views/Single.vue'),
+    component: () => import(/* webpackChunkName: "single" */ '../views/Single.vue'),
     children: [
       {
         path: "",

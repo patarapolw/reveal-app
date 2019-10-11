@@ -14,10 +14,10 @@ process.env.VUE_APP_IS_ADMIN = process.env.VUE_IS_ADMIN ||
 
 module.exports = {
   pages: {
-    index: "src/index.ts",
-    reveal: "src/reveal.ts",
+    index: "src/pages/index.ts",
+    eagle: "src/pages/eagle.ts",
     ...(process.env.VUE_APP_IS_ADMIN ? {
-      admin: "src/admin.ts"
+      admin: "src/pages/admin.ts"
     } : {})
   },
   runtimeCompiler: true,
@@ -30,7 +30,8 @@ module.exports = {
     },
     historyApiFallback: {
       rewrites: [
-        { from: /\/reveal/, to: '/reveal.html' },
+        // { from: /\/reveal/, to: '/reveal.html' },
+        { from: /\/eagle/, to: '/eagle.html' },
         { from: /\/admin/, to: '/admin.html' }
       ]
     }

@@ -1,10 +1,8 @@
 import Vue from 'vue'
-import Admin from './pages/Admin.vue'
-import {routerOptions} from './router'
+import Admin from './Admin.vue'
+import { routerOptions } from '../shared'
 import Router from "vue-router";
-import vuetify from './plugins/vuetify';
-import 'roboto-fontface/css/roboto/roboto-fontface.css'
-import '@mdi/font/css/materialdesignicons.css'
+import vuetify from '../plugins/vuetify';
 import VueCodemirror from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
 import "codemirror/mode/markdown/markdown.js";
@@ -24,9 +22,7 @@ import "codemirror/addon/fold/markdown-fold.js";
 import "codemirror/addon/fold/foldgutter.css";
 import "codemirror/addon/scroll/scrollpastend.js";
 import "codemirror/theme/monokai.css";
-import { g } from "./util";
-
-Vue.config.productionTip = false
+import { g } from "../util";
 
 Vue.use(VueCodemirror, {
   options: {
@@ -49,18 +45,16 @@ Vue.use(VueCodemirror, {
   }
 });
 
-Vue.use(Router);
-
 routerOptions.routes = routerOptions.routes || []
 routerOptions.routes.push(
   {path: "/admin", redirect: "/admin/post/view"},
   {
     path: "/admin/post/edit",
-    component: () => import(/* webpackChunkName: "PostEdit" */ './views/PostEdit.vue')
+    component: () => import(/* webpackChunkName: "PostEdit" */ '../views/PostEdit.vue')
   },
   {
     path: "/admin/post/view",
-    component: () => import(/* webpackChunkName: "PostView" */ './views/PostView.vue')
+    component: () => import(/* webpackChunkName: "PostView" */ '../views/PostView.vue')
   },
 );
 
