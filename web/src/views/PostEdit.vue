@@ -16,9 +16,9 @@ v-container.h-100.d-flex.flex-column.pa-0
     v-col(v-show="hasPreview" ref="previewHolder" style="width: 50%")
       v-card.h-100.pa-3(v-if="!isReveal")
         raw(:code="html" @lang="onLangChanged")
-      v-card(v-else ref="iframe" style="height: 80vh")
-        eagle(:content="html" @lang="onLangChanged")
-      //- iframe(v-show="isReveal" ref="iframe" frameborder="0" :src="iframeUrl")
+      v-card.iframe(v-else ref="iframe")
+        eagle-markdown(:markdown="html" :line="line"
+           :mouse-navigation="false" :keyboard-navigation="false" :back-by-slide="true")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
@@ -31,15 +31,15 @@ import { clone, setTitle } from "../util";
 import { toDate } from "valid-moment";
 import { g } from '../util';
 import Raw from "../components/Raw.vue";
-import Eagle from "../components/Eagle.vue";
+import EagleMarkdown from "../components/EagleMarkdown.vue";
 import CodeMirror from "codemirror";
 
 @Component({
   components: {
-    Raw, Eagle
+    Raw, EagleMarkdown
   }
 })
-export default class BlogEdit extends Vue {
+export default class PostEdit extends Vue {
   private code = "";
   private cmOptions = {
     mode: {
@@ -49,10 +49,12 @@ export default class BlogEdit extends Vue {
   }
 
   private headers: any = {};
+  private currentId: string | null = null;
 
   private html = "";
+  private line = 0;
+  private offset = 0;
   private hasPreview = false;
-  private iframeUrl = "about:blank";
 
   private isEdited = false;
 
@@ -68,6 +70,12 @@ export default class BlogEdit extends Vue {
     this.codemirror.addKeyMap({
       "Cmd-S": () => {this.save()},
       "Ctrl-S": () => {this.save()}
+    });
+    this.codemirror.on("cursorActivity", (instance) => {
+      this.line = instance.getCursor().line - this.offset;
+    });
+    this.codemirror.on("change", (instance) => {
+      this.line = instance.getCursor().line - this.offset;
     });
 
     await this.load();
@@ -122,13 +130,13 @@ export default class BlogEdit extends Vue {
   }
   
   onTogglePreviewClicked() {
-    // this.$router.push({query: {
-    //   ...this.$route.query,
-    //   preview: (!this.hasPreview).toString()
-    // }});
-    this.hasPreview = !this.hasPreview;
+    this.$router.push({query: {
+      ...this.$route.query,
+      preview: (!this.hasPreview).toString()
+    }});
   }
 
+  @Watch("isReveal")
   resizeIFrame() {
     const cursor = this.codemirror.getDoc().getCursor();
 
@@ -136,37 +144,14 @@ export default class BlogEdit extends Vue {
       this.codemirror.setSize("100%", "100%");
       this.codemirror.scrollIntoView(null, 400);
 
-      if (this.isReveal) {
-        this.iframeUrl = this.fileUrl || "about:blank";
-        const iframeHolder = this.$refs.previewHolder as HTMLDivElement;
-        const iframe = this.$refs.iframe as HTMLIFrameElement;
-        if (iframe && iframeHolder) {
-          const sqWidth = Math.min(iframeHolder.clientHeight, iframeHolder.clientWidth) * 0.95;
-          iframe.style.height = `${sqWidth}px`;
-          iframe.style.width = `${sqWidth}px`;
-        }
-      } else {
+      const iframeHolder = this.$refs.previewHolder as HTMLDivElement;
+      const iframe = document.getElementsByClassName("iframe")[0] as HTMLIFrameElement;
+      if (iframe && iframeHolder) {
+        const sqWidth = Math.min(iframeHolder.clientHeight, iframeHolder.clientWidth) * 0.95;
+        iframe.style.height = `${sqWidth}px`;
+        iframe.style.width = `${sqWidth}px`;
       }
     });
-  }
-
-  reloadIFrame() {
-    if (this.isReveal) {
-      const {id} = this.$route.query
-      if (id) {
-        const iframe = this.$refs.iframe as HTMLIFrameElement;
-        if (iframe && iframe.contentWindow) {
-          const url = new URL(iframe.contentWindow.location.href);
-          if (url.searchParams.get("id") === id) {
-            iframe.contentWindow.location.reload();
-          } else {
-            this.iframeUrl = `/reveal?id=${id}`;
-          }
-        }
-      } else {
-        this.iframeUrl = "about:blank";
-      }
-    }
   }
 
   get fileUrl() {
@@ -176,15 +161,7 @@ export default class BlogEdit extends Vue {
     }
 
     if (this.isReveal) {
-      const iframe = this.$refs.iframe as HTMLIFrameElement;
-      if (iframe && iframe.contentWindow) {
-        const url = new URL(iframe.contentWindow.location.href);
-        if (url.searchParams.get("id") === id) {
-          return url.href;
-        }
-        
-        return this.$router.resolve(`/reveal?id=${id}`).href;
-      }
+      return this.$router.resolve(`/present?id=${id}`).href;
     }
 
     return this.$router.resolve(`/post?id=${id}`).href;
@@ -209,7 +186,8 @@ export default class BlogEdit extends Vue {
       this.resizeIFrame();
     }
 
-    if (id) {
+    if (id && id !== this.currentId) {
+      this.currentId = id as string;
       const url = `/api/post/${id}`;
 
       try {
@@ -221,18 +199,12 @@ export default class BlogEdit extends Vue {
         this.code = matter.stringify(m.content, clone({...m.data, title, date, tag, hidden, type}));
         this.isEdited = false;
 
-        setTimeout(() => this.isEdited = false, 100);
-
-        if (type === "reveal") {
-          this.reloadIFrame();
-        }
+        this.$nextTick(() => this.isEdited = false);
       } catch(e) {
         this.snackbar.text = e.toString();
         this.snackbar.color = "error",
         this.snackbar.show = true;
       }
-    } else {
-      this.reset();
     }
   }
 
@@ -249,20 +221,24 @@ export default class BlogEdit extends Vue {
         },
         body: JSON.stringify({
           ...this.headers,
-          _id: this.$route.query.id,
+          _id: this.currentId || undefined,
           newId: this.headers._id,
           content: this.code
         })
       })).json();
 
-      this.$router.push({query: {id: _id}});
+      if (_id) {
+        this.$router.push({query: {
+          ...this.$route.query,
+          id: _id
+        }})
+      };
 
       this.snackbar.text = "Saved";
       this.snackbar.color = "cyan darken-2";
       this.snackbar.show = true;
 
       this.isEdited = false;
-      this.reloadIFrame();
     } catch(e) {
       this.snackbar.text = e.toString();
       this.snackbar.color = "error",
@@ -277,7 +253,11 @@ export default class BlogEdit extends Vue {
       const {data, content} = matter(newCode);
       Vue.set(this, "headers", data);
       this.html = content;
-    } catch(e) {}
+      this.offset = newCode.replace(content, "").split("\n").length - 1;
+    } catch(e) {
+      this.html = newCode;
+      this.offset = 0;
+    }
   }
 
   onLangChanged(lang: string) {
@@ -291,10 +271,10 @@ export default class BlogEdit extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
-iframe {
+<style lang="scss">
+.iframe {
   position: fixed;
-  height: 100%;
-  width: 100%;
+  height: calc(100vh - 180px);
+  width: calc(100vh - 180px);
 }
 </style>

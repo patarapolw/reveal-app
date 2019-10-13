@@ -1,7 +1,8 @@
 declare module "vue-disqus";
 declare module "vue-codemirror";
+
 declare module "eagle.js" {
-  import { Vue, Component } from "vue-property-decorator";
+  import { Vue, Prop, Component } from "vue-property-decorator";
 
   export default Eagle;
   
@@ -12,23 +13,32 @@ declare module "eagle.js" {
 
   @Component
   export class Slideshow extends Vue {
-    firstSlide: number;
-    lastSlide: number | null;
-    startStep: number;
-    mouseNavigation: boolean;
-    keyboardNavigation: boolean;
-    embedded: boolean;
-    inserted: boolean;
-    onStartExit: boolean;
-    onEndExit: boolean;
-    backBySlide: boolean;
-    repeat: boolean;
-    zoom: boolean;
+    @Prop() firstSlide: number;
+    @Prop() lastSlide: number | null;
+    @Prop() startStep: number;
+    @Prop() mouseNavigation: boolean;
+    @Prop() keyboardNavigation: boolean;
+    @Prop() embedded: boolean;
+    @Prop() inserted: boolean;
+    @Prop() onStartExit: boolean;
+    @Prop() onEndExit: boolean;
+    @Prop() backBySlide: boolean;
+    @Prop() repeat: boolean;
+    @Prop() zoom: boolean;
+
+    currentSlideIndex: number;
+    currentSlide: number | null;
+    step: number;
+    slideshowTimer: number;
+    slideTimer: number;
+    slides: any[];
+    active: boolean;
 
     findSlides(): void;
     nextStep(): void;
     previousStep(): void;
     nextSlide(): void;
     previousSlide(): void;
+    changeDirection(direction: "prev" | "next"): void;
   }
 }
