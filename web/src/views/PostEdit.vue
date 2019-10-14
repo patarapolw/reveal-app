@@ -52,6 +52,7 @@ export default class PostEdit extends Vue {
   private html = "";
   private line = 0;
   private offset = 0;
+  private ch = 0;
   private hasPreview = false;
 
   private isEdited = false;
@@ -69,15 +70,17 @@ export default class PostEdit extends Vue {
       "Cmd-S": () => {this.save()},
       "Ctrl-S": () => {this.save()}
     });
-    this.codemirror.on("cursorActivity", (instance) => {
-      this.line = instance.getCursor().line - this.offset;
-    });
-    this.codemirror.on("change", (instance) => {
-      this.line = instance.getCursor().line - this.offset;
-    });
+
+    const onCursorMoved = () => {
+      const {ch, line} = this.codemirror.getCursor();
+      this.line = line - this.offset;
+      this.ch = ch;
+    }
+
+    this.codemirror.on("cursorActivity", onCursorMoved);
 
     await this.load();
-    this.onTitleChange();
+    this.onTitleChanged();
 
     window.onbeforeunload = (e: any) => {
       console.log(e);
@@ -225,25 +228,30 @@ export default class PostEdit extends Vue {
     }
   }
 
+  @Watch("ch")
   @Watch("line")
   onCursorMove() {
-    let slideNumber = 0;
-    let stepNumber = 0;
-    let i = 0;
-    for (const row of this.html.split("\n")) {
-      if (/^(?:---|===)$/.test(row)) {
-        slideNumber++;
-        stepNumber = 0;
-      } else if (/^--$/.test(row)) {
-        stepNumber++;
+    if (this.isReveal) {
+      let slideNumber = 0;
+      let stepNumber = 0;
+      let i = 0;
+      for (const row of this.html.split("\n")) {
+        if (/^(?:---|===)$/.test(row)) {
+          slideNumber++;
+          stepNumber = 0;
+        } else if (/^--$/.test(row)) {
+          stepNumber++;
+        }
+        i++;
+        if (i >= this.line) {
+          break;
+        }
       }
-      i++;
-      if (i >= this.line) {
-        break;
+
+      if (this.iframeWindow.reveal) {
+        this.iframeWindow.reveal.goto(slideNumber, stepNumber);
       }
     }
-
-    this.iframeWindow.Reveal.slide(slideNumber, stepNumber);
   }
 
   async save() {
@@ -303,8 +311,17 @@ export default class PostEdit extends Vue {
   }
 
   @Watch("headers.title")
-  onTitleChange() {
+  onTitleChanged() {
     setTitle(this.headers.title || "New Entry", true);
+  }
+
+  @Watch("code")
+  onCodeChanged() {
+    if (this.isReveal) {
+      this.onIFrameReady(() => {
+        this.iframeWindow.reveal.update(this.code);
+      });
+    }
   }
 }
 </script>

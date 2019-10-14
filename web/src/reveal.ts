@@ -8,7 +8,6 @@ import { speak } from "./util";
 import hljs from "highlight.js";
 
 const revealCDN = "https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/";
-declare const Reveal: any;
 let makeHTML: MakeHTML;
 
 declare global {
@@ -40,7 +39,8 @@ try {
       method: "POST"
     })).json();
 
-    window.reveal = new RevealMaker(content);
+    window.reveal.update(content);
+    window.reveal.refresh();
   }
 })().catch(console.error);
 
@@ -125,6 +125,7 @@ export class RevealMaker {
   headers: any = {};
   queue: Array<() => void> = [];
   reveal = window.Reveal;
+  events: Record<string, (evt: any) => void> = {};
 
   constructor(
     public markdown: string,
@@ -137,6 +138,8 @@ export class RevealMaker {
     });
 
     this.onReady(() => {
+      window.Reveal.configure(data);
+
       mainDiv.innerHTML = "";
       this.raw.map((el, i) => {
         mainDiv.appendChild(h("section", el.map((ss, j) => {
@@ -162,6 +165,8 @@ export class RevealMaker {
 
     this.headers = data;
     this.onReady(() => {
+      window.Reveal.configure(data);
+
       const newRaw = content.split(/^(?:---|===)$/gm).map((el, x) => {
         return el.split(/^--$/gm).map((ss, y) => {
           if (!this.raw[x] || this.raw[x][y] !== ss) {
@@ -203,10 +208,8 @@ export class RevealMaker {
         el.map((ss, j) => {
           const y = el.length - j - 1;
 
-          if (!newRaw[x] || !newRaw[x][y]) {
-            console.log(x, y);
+          if (!newRaw[x] || newRaw[x][y] === undefined) {
             const subSection = this.reveal.getSlide(x, y);
-            console.log(subSection, x, y);
             if (subSection) {
               subSection.remove();
             }
@@ -227,18 +230,41 @@ export class RevealMaker {
     setTitle(this.headers.title);
   }
 
-  onReady(fn: () => void, sync: boolean = true) {
+  onReady(fn: () => void) {
     if (this.reveal && this.reveal.isReady()) {
       fn();
-      if (sync) {
-        this.reveal.slide(-1, -1, -1);
-        this.reveal.sync();
-      }
+      this.updateOnChange();
     } else {
       this.queue.push(() => {
         fn();
       })
     }
+  }
+
+  private updateOnChange() {
+    const event = "onslidechanged";
+    const cb = (evt: any) => {
+      const {indexh, indexv} = evt;
+      this.refresh();
+      this.reveal.slide(indexh, indexv);
+      delete this.events[event];
+      this.reveal.removeEventListener(event, cb);
+    }
+
+    if (!this.events[event]) {
+      this.reveal.addEventListener(event, cb);
+    }
+
+    this.events[event] = cb;
+  }
+
+  goto(x: number, y: number) {
+    this.reveal.slide(x, y);
+  }
+
+  refresh() {
+    this.reveal.slide(-1, -1, -1);
+    this.reveal.sync();
   }
 }
 
