@@ -16,9 +16,7 @@ v-container.h-100.d-flex.flex-column.pa-0
     v-col(v-show="hasPreview" ref="previewHolder" style="width: 50%")
       v-card.h-100.pa-3(v-if="!isReveal")
         raw(:code="html" @lang="onLangChanged")
-      v-card.iframe(v-else ref="iframe")
-        eagle-markdown(:markdown="html" :line="line"
-           :mouse-navigation="false" :keyboard-navigation="false" :back-by-slide="true")
+      iframe#iframe(ref="iframe" v-show="isReveal" :src="fileUrl || '/reveal'" frameborder="0")
   v-snackbar(v-model="snackbar.show" :color="snackbar.color" :top="true")
     | {{snackbar.text}}
     v-btn(text @click="snackbar.show = false") Close
@@ -31,12 +29,12 @@ import { clone, setTitle } from "../util";
 import { toDate } from "valid-moment";
 import { g } from '../util';
 import Raw from "../components/Raw.vue";
-import EagleMarkdown from "../components/EagleMarkdown.vue";
 import CodeMirror from "codemirror";
+import { RevealMaker } from "../reveal";
 
 @Component({
   components: {
-    Raw, EagleMarkdown
+    Raw
   }
 })
 export default class PostEdit extends Vue {
@@ -99,6 +97,33 @@ export default class PostEdit extends Vue {
     return (this.$refs.cm as any).codemirror;
   }
 
+  get iframe(): HTMLIFrameElement {
+    return this.$refs.iframe as HTMLIFrameElement;
+  }
+
+  get iframeWindow() {
+    return this.iframe.contentWindow as Window & {
+      Reveal: RevealStatic,
+      reveal: RevealMaker;
+    }
+  }
+
+  onIFrameReady(fn: () => void) {
+    const toLoad = () => {
+      this.iframeWindow.reveal.onReady(() => {
+        fn();
+      });
+    };
+
+    if (this.iframe && this.iframe.contentDocument) {
+      if (this.iframeWindow.reveal) {
+        toLoad();
+      } else {
+        this.iframeWindow.onload = toLoad;
+      }
+    }
+  }
+
   get isReveal() {
     return this.headers.type === "reveal";
   }
@@ -143,14 +168,6 @@ export default class PostEdit extends Vue {
     this.$nextTick(() => {
       this.codemirror.setSize("100%", "100%");
       this.codemirror.scrollIntoView(null, 400);
-
-      const iframeHolder = this.$refs.previewHolder as HTMLDivElement;
-      const iframe = document.getElementsByClassName("iframe")[0] as HTMLIFrameElement;
-      if (iframe && iframeHolder) {
-        const sqWidth = Math.min(iframeHolder.clientHeight, iframeHolder.clientWidth) * 0.95;
-        iframe.style.height = `${sqWidth}px`;
-        iframe.style.width = `${sqWidth}px`;
-      }
     });
   }
 
@@ -161,7 +178,7 @@ export default class PostEdit extends Vue {
     }
 
     if (this.isReveal) {
-      return this.$router.resolve(`/present?id=${id}`).href;
+      return this.$router.resolve(`/reveal?id=${id}`).href;
     }
 
     return this.$router.resolve(`/post?id=${id}`).href;
@@ -206,6 +223,27 @@ export default class PostEdit extends Vue {
         this.snackbar.show = true;
       }
     }
+  }
+
+  @Watch("line")
+  onCursorMove() {
+    let slideNumber = 0;
+    let stepNumber = 0;
+    let i = 0;
+    for (const row of this.html.split("\n")) {
+      if (/^(?:---|===)$/.test(row)) {
+        slideNumber++;
+        stepNumber = 0;
+      } else if (/^--$/.test(row)) {
+        stepNumber++;
+      }
+      i++;
+      if (i >= this.line) {
+        break;
+      }
+    }
+
+    this.iframeWindow.Reveal.slide(slideNumber, stepNumber);
   }
 
   async save() {
@@ -272,9 +310,9 @@ export default class PostEdit extends Vue {
 </script>
 
 <style lang="scss">
-.iframe {
+#iframe {
   position: fixed;
   height: calc(100vh - 180px);
-  width: calc(100vh - 180px);
+  width: calc(48vw - 128px);
 }
 </style>

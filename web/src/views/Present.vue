@@ -4,20 +4,18 @@ v-container.pa-0(style="height: 100%")
     v-col.col-lg-4.h-100(fixed style="overflow-y: scroll;" :class="id ? 'hidden-md-and-down' : 'col-md-12'")
       v-treeview(@update:active="onSelected" :open="open" :items="items" item-key="data._id" open-on-click activatable return-object)
     v-divider(vertical)
-    v-col.h-100.justify-center(v-if="id")
-      eagle-markdown(:markdown="html" :mouse-navigation="false" :keyboard-navigation="false" :back-by-slide="true")
+    v-col
+      iframe#iframe(ref="iframe" v-if="id" :src="'/reveal?id=' + id" frameborder="0" 
+      :style="{width: $vuetify.breakpoint.lgAndUp ? 'calc(70vw - 256px)' : '100%'}")
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { normalizeArray, setTitle } from "../util";
 import ToNested, { ITreeViewItem } from "record-to-nested";
-import EagleMarkdown from "../components/EagleMarkdown.vue";
 import matter from "gray-matter";
 
-@Component({
-  components: {EagleMarkdown}
-})
+@Component
 export default class Reveal extends Vue {
   private items: any[] = [];
   private open = [];
@@ -85,3 +83,10 @@ export default class Reveal extends Vue {
   }
 }
 </script>
+
+<style lang="scss">
+#iframe {
+  position: fixed;
+  height: calc(98vh - 64px);
+}
+</style>

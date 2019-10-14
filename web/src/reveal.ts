@@ -3,8 +3,23 @@ import "./global.scss";
 import "./global";
 import matter from "gray-matter";
 import MakeHTML from "@reveal-app/make-html";
+import h from "hyperscript";
+import { speak } from "./util";
+import hljs from "highlight.js";
 
+const revealCDN = "https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/";
+declare const Reveal: any;
 let makeHTML: MakeHTML;
+
+declare global {
+  interface Window {
+    Reveal: RevealStatic;
+    reveal: RevealMaker;
+    revealCDN: string;
+  }
+}
+
+window.revealCDN = revealCDN;
 
 try {
   const { slideExt, speakExt } = require("@zhsrs/custom-markdown");
@@ -18,150 +33,258 @@ try {
   );
 }
 
-declare const revealCDN: string;
-declare const Reveal: any;
-
 (async () => {
   const _id = new URL(location.href).searchParams.get("id");
   if (_id) {
-    let {title, content} = await (await fetch(`/api/post/${_id}`, {
+    let {content} = await (await fetch(`/api/post/${_id}`, {
       method: "POST"
     })).json();
 
-    const m = matter(content);
-
-    const {lang} = makeHTML.compile(m.content);
-    let trueCode = m.content;
-
-    if (content.startsWith("//")) {
-      const lines = content.split("\n");
-      trueCode = lines.slice(1).join("\n");
-    }
-
-    const slides = trueCode.split(/^(?:---|===)$/gm).map((slideGroup) => {
-      return slideGroup.split(/^--$/gm).map((s) => {
-        if (lang === "pug") {
-          return makeHTML.pug(s);
-        } else {
-          return makeHTML.compile(s).html;
-        }
-      })
-    });
-
-    init({
-      data: {
-        title,
-        ...m.data
-      },
-      slides
-    });
+    window.reveal = new RevealMaker(content);
   }
 })().catch(console.error);
 
-$(() => {
-  $(document).on("click", ".v-speak", (ev) => {
-    const p = ev.target as HTMLSpanElement;
+document.addEventListener("click", (evt) => {
+  const {target} = evt;
+  if (target instanceof HTMLElement && target.classList.contains("v-speak")) {
+    const p = target;
     const lang = p.getAttribute("lang");
-    const s = p.getAttribute("s");
+    const s = p.getAttribute("s") || p.innerText;
 
-    speak(s || p.innerText, lang || "zh-CN");
+    if (s) {
+      speak(s, lang || "zh-CN");
+    }
+  }
+});
+
+let mainDiv: HTMLDivElement;
+
+window.addEventListener("load", async () => {
+  mainDiv = document.getElementById("slides") as HTMLDivElement;
+  const Reveal = window.Reveal;
+
+  Reveal.initialize();
+
+  Reveal.once = (type, listener, useCapture) => {
+    const removeOnDone = () => {
+      listener(undefined);
+      Reveal.removeEventListener(type, removeOnDone, useCapture);
+    }
+  
+    if (Reveal.isReady()) {
+      Reveal.addEventListener(type, removeOnDone, useCapture);
+    } else {
+      setTimeout(() => {
+        Reveal.once(type, listener, useCapture);
+      }, 100);
+    }
+  }
+  
+  Reveal.onReady = (listener) => {
+    if (Reveal.isReady()) {
+      listener();
+    } else {
+      Reveal.once("ready", listener);
+    }
+  }
+
+  Reveal.once("ready", () => {
+    window.reveal.reveal = window.Reveal;
+    window.reveal.queue.forEach((it) => it());
+    window.reveal.queue = [];
+    Reveal.slide(-1, -1, -1);
+    Reveal.sync();
   });
 });
 
-function init(computedMd: any) {
-  const headTag = document.getElementsByTagName("head")[0];
-  const bodyTag = document.getElementsByTagName("body")[0];
-
-  let { css, js } = computedMd.data;
-
-  if (css) {
-      if (!Array.isArray(css)) {
-          css = [css];
-      }
-
-      for (const c of css) {
-          const link = document.createElement("link");
-          link.rel = "stylesheet";
-          link.type = "text/css";
-          link.href = c;
-          headTag.append(link);
-      }
+function renderDOM(text: string) {
+  let lang = "markdown";
+  const m = /(?:^|\r?\n)```(\S+)\r?\n(.+)```(?:\r?\n|$)/ms.exec(text);
+  if (m) {
+    lang = m[1];
+    text = m[2];
   }
 
-  if (js) {
-      if (!Array.isArray(js)) {
-          js = [js];
-      }
+  let html = text;
 
-      for (const j of js) {
-          const script = document.createElement("script");
-          script.src = j;
-          bodyTag.append(script);
-      }
+  switch(lang) {
+    case "markdown": html = makeHTML.markdown(text); break;
+    case "html": html = text; break;
+    case "pug": html = makeHTML.pug(text); break;
+    default:
+      const pre = document.createElement("pre");
+      pre.innerText = text;
+      html = pre.outerHTML;
   }
 
-  if (computedMd.data.theme) {
-      (document.getElementById("theme") as HTMLLinkElement).href = `${revealCDN}css/theme/${computedMd.data.theme}.css`;
-  }
-
-  if (computedMd.data.highlightTheme) {
-      (document.getElementById("highlightTheme") as HTMLLinkElement).href = `${revealCDN}lib/css/${computedMd.data.highlightTheme}.css`;
-  }
-
-  let slideGroups = computedMd.slides;
-  const markdownSections = document.getElementById("markdownSections");
-
-  slideGroups.forEach((slides: any) => {
-      const section = document.createElement("section");
-
-      if (slides.length > 1) {
-          slides.forEach((s: string) => {
-              const subSection = document.createElement("section");
-              subSection.setAttribute("data-transition", "slide");
-              subSection.innerHTML = s;
-              section.append(subSection);
-          });
-      } else {
-          section.innerHTML = slides[0];
-      }
-
-      markdownSections!.appendChild(section);
-  });
-
-  // More info about config & dependencies:
-  // - https://github.com/hakimel/reveal.js#configuration
-  // - https://github.com/hakimel/reveal.js#dependencies
-  Reveal.initialize({
-      hash: true,
-      history: true,
-      ...computedMd.data,
-      dependencies: [
-          { src: `${revealCDN}plugin/markdown/marked.js` },
-          { src: `${revealCDN}plugin/markdown/markdown.js` },
-          { src: `${revealCDN}plugin/highlight/highlight.js`, async: true }
-      ]
-  });
+  return html;
 }
 
-function speak(s: string, lang = "zh-CN", rate = 0.8) {
-  const allVoices = speechSynthesis.getVoices();
-  let vs = allVoices.filter((v) => v.lang === lang);
-  if (vs.length === 0) {
-      const m1 = lang.substr(0, 2);
-      const m2 = lang.substr(3, 2);
-      const r1 = new RegExp(`^${m1}[-_]${m2}`, "i");
+export class RevealMaker {
+  raw: string[][] = [[]];
+  headers: any = {};
+  queue: Array<() => void> = [];
+  reveal = window.Reveal;
 
-      vs = allVoices.filter((v) => r1.test(v.lang));
-      if (vs.length === 0) {
-          const r2 = new RegExp(`^${m1}`, "i");
-          vs = allVoices.filter((v) => r2.test(v.lang));
-      }
+  constructor(
+    public markdown: string,
+    public rSource: {css: string[], js: (string | {async?: boolean, src: string})[]} = {css: [], js: []}
+  ) {
+    const {data, content} = matter(markdown);
+    this.headers = data;
+    this.raw = content.split(/^(?:---|===)$/gm).map((el) => {
+      return el.split(/^--$/gm);
+    });
+
+    this.onReady(() => {
+      mainDiv.innerHTML = "";
+      this.raw.map((el, i) => {
+        mainDiv.appendChild(h("section", el.map((ss, j) => {
+          return h("section", [
+            h(".container", {innerHTML: renderDOM(ss)})
+          ]);
+        })));
+      });
+
+      mainDiv.querySelectorAll("pre code").forEach((block) => {
+        hljs.highlightBlock(block);
+      });
+    });
+
+    window.reveal = this;
+
+    setTitle(this.headers.title);
   }
 
-  if (vs.length > 0) {
-      const u = new SpeechSynthesisUtterance(s);
-      u.lang = vs[0].lang;
-      u.rate = rate || 0.8;
-      speechSynthesis.speak(u);
+  update(markdown: string) {
+    this.markdown = markdown;
+    const {data, content} = matter(markdown);
+
+    this.headers = data;
+    this.onReady(() => {
+      const newRaw = content.split(/^(?:---|===)$/gm).map((el, x) => {
+        return el.split(/^--$/gm).map((ss, y) => {
+          if (!this.raw[x] || this.raw[x][y] !== ss) {
+            let container = h(".container", {innerHTML: renderDOM(ss)});
+            const subSection = this.reveal.getSlide(x, y);
+  
+            if (subSection) {
+              const oldContainers = subSection.getElementsByClassName("container");
+              if (oldContainers) {
+                oldContainers[0].replaceWith(container);
+              } else {
+                subSection.appendChild(container);
+              }
+            } else {
+              const section = this.reveal.getSlide(x);
+              if (section) {
+                section.appendChild(h("section", [
+                  container
+                ]));
+              } else {
+                mainDiv.appendChild(h("section", [
+                  h("section", [
+                    container
+                  ])
+                ]));
+              }
+            }
+  
+            container.querySelectorAll("pre code").forEach((block) => {
+              hljs.highlightBlock(block);
+            });
+          }
+
+          return ss;
+        });
+      });
+
+      this.raw.map((el, x) => {
+        el.map((ss, j) => {
+          const y = el.length - j - 1;
+
+          if (!newRaw[x] || !newRaw[x][y]) {
+            console.log(x, y);
+            const subSection = this.reveal.getSlide(x, y);
+            console.log(subSection, x, y);
+            if (subSection) {
+              subSection.remove();
+            }
+          }
+        });
+
+        if (!newRaw[x]) {
+          const section = this.reveal.getSlide(x);
+          if (section) {
+            section.remove();
+          }
+        }
+      });
+
+      this.raw = newRaw;
+    });
+
+    setTitle(this.headers.title);
+  }
+
+  onReady(fn: () => void, sync: boolean = true) {
+    if (this.reveal && this.reveal.isReady()) {
+      fn();
+      if (sync) {
+        this.reveal.slide(-1, -1, -1);
+        this.reveal.sync();
+      }
+    } else {
+      this.queue.push(() => {
+        fn();
+      })
+    }
   }
 }
+
+(window as any).RevealMaker = RevealMaker;
+const reveal = new RevealMaker("");
+window.reveal = reveal;
+
+function setTitle(s?: string) {
+  let title = document.getElementsByTagName("title")[0];
+  if (!title) {
+    title = document.createElement("title");
+    document.head.appendChild(title);
+  }
+
+  title.innerText = s || "";
+}
+
+function loadReveal() {
+  reveal.rSource.css.push(
+    "css/reveal.css",
+    `css/theme/${reveal.headers.theme || "white"}.css`
+  );
+  reveal.rSource.js.push(
+    {async: false, src: "js/reveal.js"}
+  );
+
+  for (const href of reveal.rSource.css) {
+    document.body.appendChild(Object.assign(document.createElement("link"), {
+      href: window.revealCDN + href,
+      rel: "stylesheet",
+      type: "text/css"
+    }));
+  }
+
+  for (let js of reveal.rSource.js) {
+    if (typeof js === "string") {
+      js = {async: true, src: js}
+    }
+
+    const {async, src} = js;
+    document.body.appendChild(Object.assign(document.createElement("script"), {
+      async,
+      type: "text/javascript",
+      src: window.revealCDN + src
+    }));
+  }
+}
+
+loadReveal();

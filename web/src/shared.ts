@@ -6,13 +6,10 @@ import Vue from 'vue';
 import Router from "vue-router";
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
 import '@mdi/font/css/materialdesignicons.css';
-import Eagle from "eagle.js";
-import "animate.css";
 
 Vue.config.productionTip = false
 
 Vue.use(Router);
-Vue.use(Eagle);
 
 export const routerOptions: RouterOptions = {
   mode: "history",

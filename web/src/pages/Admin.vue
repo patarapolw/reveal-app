@@ -69,7 +69,7 @@ v-app
       v-card
         v-card-title Hint
         v-card-text {{getUserDeep("web.hint")}}
-  v-app-bar(:clipped-left="isDrawer" app color="green" dark)
+  v-app-bar(:clipped-left="isDrawer" app color="orange" dark)
     v-toolbar-title.mr-3
       v-app-bar-nav-icon.mr-2(@click.stop="isDrawer = !isDrawer")
       span.hidden-md-and-down(style="cursor: pointer;" @click="$router.push('/')") {{getUserDeep("web.banner")}}

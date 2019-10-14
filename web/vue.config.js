@@ -15,6 +15,7 @@ process.env.VUE_APP_IS_ADMIN = process.env.VUE_IS_ADMIN ||
 module.exports = {
   pages: {
     index: "src/pages/index.ts",
+    reveal: "src/reveal.ts",
     ...(process.env.VUE_APP_IS_ADMIN ? {
       admin: "src/pages/admin.ts"
     } : {})
@@ -29,6 +30,7 @@ module.exports = {
     },
     historyApiFallback: {
       rewrites: [
+        { from: /\/reveal/, to: '/reveal.html' },
         { from: /\/admin/, to: '/admin.html' }
       ]
     }
