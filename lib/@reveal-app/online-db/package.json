@@ -4,7 +4,6 @@
   "description": "",
   "main": "build/index.js",
   "types": "build/index.d.ts",
-  "private": true,
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,7 +11,7 @@
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
   "license": "MIT",
   "dependencies": {
-    "@reveal-app/abstract-db": "file:../abstract-db",
+    "@reveal-app/abstract-db": "^1.0.0",
     "@typegoose/typegoose": "^6.0.0",
     "@types/fast-json-stable-stringify": "^2.0.0",
     "@types/mongoose": "^5.5.18",

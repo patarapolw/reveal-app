@@ -42,7 +42,7 @@ declare class Media implements IMedia {
     _id: string;
     name: string;
     tag: string[];
-    data: ArrayBuffer;
+    data: any;
     static searchOptions: ISearchOptions<Media>;
 }
 declare class Card implements ICard {

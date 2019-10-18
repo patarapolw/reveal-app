@@ -24,8 +24,14 @@ mediaRouter.post("/", async (req, res, next) => {
 mediaRouter.put("/", async (req, res, next) => {
   try {
     const file = req.files!.file as UploadedFile;
+    let {name, data} = file;
+
+    if (name === "image.png") {
+      name = new Date().toISOString();
+    }
+
     const { _id, newId, tag } = req.body;
-    const payload = {name: file.name, data: file.data, tag};
+    const payload = {name, data: data, tag};
     let outputId = _id || newId || undefined;
 
     if (!_id) {
@@ -48,8 +54,8 @@ mediaRouter.put("/", async (req, res, next) => {
 
 mediaRouter.get("/:id", async (req, res, next) => {
   try {
-    const p = await g.db!.tables.media.findById(req.params.id)
-    return res.send(p ? p.data : "");
+    const p = await g.db!.tables.media.findById(req.params.id);
+    return res.send(p ? p.data.buffer : "");
   } catch(e) {
     return next(e);
   }

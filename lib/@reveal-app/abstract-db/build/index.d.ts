@@ -34,7 +34,7 @@ export interface IPost {
 export interface IMedia {
     _id: string;
     name: string;
-    data: ArrayBuffer;
+    data: any;
     tag: string[];
 }
 export interface ICard {

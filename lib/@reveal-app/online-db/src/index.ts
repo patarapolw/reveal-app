@@ -1,10 +1,11 @@
-import { pre, prop, Ref, index, DocumentType, getModelForClass } from "@typegoose/typegoose";
+import { pre, prop, Ref, index, getModelForClass } from "@typegoose/typegoose";
 import { generateTable } from "./util";
 import SparkMD5 from "spark-md5";
 import stringify from "fast-json-stable-stringify";
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import AbstractDb, { IPost, IMedia, IUser, ICard, IQuiz, generateSecret } from "@reveal-app/abstract-db";
 import { IQParserOptions } from "q2filter";
+import { Binary } from "bson";
 
 type ISearchOptions<T> = Partial<IQParserOptions<T & {
   createdAt: Date;
@@ -69,7 +70,7 @@ class Media implements IMedia {
   @prop() _id!: string;
   @prop({ required: true }) name!: string;
   @prop({ default: [] }) tag!: string[];
-  @prop({ required: true }) data!: ArrayBuffer;
+  @prop({ required: true, type: Buffer }) data!: any;
 
   static searchOptions: ISearchOptions<Media> = {
     anyOf: new Set(["name", "tag"]),

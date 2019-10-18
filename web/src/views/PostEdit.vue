@@ -78,6 +78,26 @@ export default class PostEdit extends Vue {
     }
 
     this.codemirror.on("cursorActivity", onCursorMoved);
+    // @ts-ignore
+    this.codemirror.on("paste", async (ins: CodeMirror.Editor, evt: ClipboardEvent) => {
+      // @ts-ignore
+      const items: any = (evt.clipboardData || evt.originalEvent.clipboardData).items;
+      for (const k of Object.keys(items)) {
+        const item = items[k];
+        if (item.kind === "file") {
+          evt.preventDefault();
+          const blob: File = item.getAsFile();
+          const formData = new FormData();
+          formData.append("file", blob);
+          fetch("/api/media/", {
+            method: "PUT",
+            body: formData
+          }).then((r) => r.json()).then((r) => {
+            ins.getDoc().replaceRange(`![${blob.name}](/api/media/${r._id})`, ins.getCursor());
+          });
+        }
+      }
+    })
 
     await this.load();
     this.onTitleChanged();
