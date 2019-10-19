@@ -2,7 +2,6 @@ import express from "express";
 import session from "express-session";
 import passport from "passport";
 import connectMongo from "connect-mongodb-session";
-import "./auth/auth0";
 import "./auth/token";
 import apiRouter from "./api";
 import { g } from "./config";
