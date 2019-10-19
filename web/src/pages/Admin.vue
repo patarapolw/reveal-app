@@ -18,22 +18,11 @@ v-app
               v-icon mdi-pencil-outline
           v-list-item-content
             v-list-item-title Edit entry
-      v-list-group(:value="$route.path.startsWith('/admin/media')")
-        template(v-slot:activator)
-          v-list-item-avatar
+      v-list-item(to="/admin/media/view")
+        v-list-item-avatar
             v-icon mdi-image-size-select-actual
-          v-list-item-content
-            v-list-item-title Media
-        v-list-item(to="/admin/media/view")
-          v-list-item-avatar.ml-3
-              v-icon mdi-view-list
-          v-list-item-content
-            v-list-item-title View entries
-        v-list-item(to="/admin/media/edit")
-          v-list-item-avatar.ml-3
-              v-icon mdi-pencil-outline
-          v-list-item-content
-            v-list-item-title Edit entry
+        v-list-item-content
+          v-list-item-title Media
       //- v-list-group(:value="$route.path.startsWith('/quiz')")
       //-   template(v-slot:activator)
       //-     v-list-item-avatar

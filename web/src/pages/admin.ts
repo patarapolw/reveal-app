@@ -56,6 +56,10 @@ routerOptions.routes.push(
     path: "/admin/post/view",
     component: () => import(/* webpackChunkName: "PostView" */ '../views/PostView.vue')
   },
+  {
+    path: "/admin/media/view",
+    component: () => import(/* webpackChunkName: "MediaView" */ '../views/MediaView.vue')
+  },
 );
 
 const router = new Router(routerOptions);
