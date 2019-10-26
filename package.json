@@ -8,8 +8,10 @@
     "lib": "lib"
   },
   "scripts": {
-    "admin:start": "pm2 start scripts/admin.dev.yaml && pm2 logs web",
-    "admin:stop": "pm2 delete scripts/admin.dev.yaml",
+    "admin:start": "pm2 start admin.dev.yaml && pm2 logs web",
+    "hidden:start": "pm2 start admin.dev.yaml --env hidden && pm2 logs web",
+    "open:start": "pm2 start admin.dev.yaml --env open && pm2 logs web",
+    "admin:stop": "pm2 delete admin.dev.yaml",
     "server:build": "cd server && npm run build",
     "web:build": "cd web && npm run build",
     "build:only": "npm run server:build && npm run web:build",

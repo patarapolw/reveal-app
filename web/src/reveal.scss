@@ -4,8 +4,9 @@
 }
 
 img {
-  max-height: 90vh !important;
+  max-height: 100vh !important;
   max-width: 100vw !important;
+  border: none !important;
 }
 
 .button {
@@ -14,4 +15,10 @@ img {
 
 .table {
   font-size: 5vh;
+}
+
+.container {
+  ul, ol {
+    font-size: 36px;
+  }
 }

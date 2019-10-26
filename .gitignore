@@ -125,3 +125,4 @@ typings/
 /.env
 dist/
 *.db
+/*.dev.yaml
