@@ -50,7 +50,10 @@ export function speak(s: string, lang: string = "zh-CN", rate: number = 0.8) {
 
 export function setTitle(s?: string, isAdmin?: boolean): string {
   const subtitle = dotProp.get(g.user, "web.title");
-  const title = `${s ? `${s} | ` : ""}${subtitle || ""}${isAdmin ? " - Admin panel" : ""}`;
+  let title = [s, subtitle].filter(((el) => el)).join(" | ");
+  if (isAdmin) {
+    title = [title, "Admin panel"].filter(((el) => el)).join(" - ");
+  }
 
   document.getElementsByTagName("title")[0].innerText = title;
 
