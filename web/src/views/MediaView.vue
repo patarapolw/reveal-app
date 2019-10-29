@@ -43,7 +43,7 @@ import { g, setTitle } from '../util';
 @Component
 export default class BlogView extends Vue {
   private g = g;
-  private selected: string[] = [];
+  private selected: {_id: string}[] = [];
   private headers = [
     {text: "_id", value: "_id", width: 250},
     {text: "Name", value: "name"},
@@ -146,7 +146,7 @@ export default class BlogView extends Vue {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          ids: this.selected,
+          ids: this.selected.map((el) => el._id),
           tags: this.newTags.split(" ")
         })
       });
@@ -157,7 +157,7 @@ export default class BlogView extends Vue {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          ids: this.selected,
+          ids: this.selected.map((el) => el._id),
           tags: this.newTags.split(" ")
         })
       });
@@ -170,8 +170,18 @@ export default class BlogView extends Vue {
     this.newTags = "";
   }
 
-  remove() {
+  async remove() {
+    await Promise.all(this.selected.map(async (el) => {
+      try {
+        await fetch(`/api/media/${el._id}`, {
+          method: "DELETE",
+        });
+      } catch(e) {
+        console.error(e);
+      }
+    }));
 
+    this.load();
   }
 }
 </script>

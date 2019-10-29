@@ -2,22 +2,11 @@
 v-app
   v-navigation-drawer(v-model="isDrawer" :clipped="$vuetify.breakpoint.lgAndUp" app)
     v-list(dense)
-      v-list-group(:value="$route.path.startsWith('/admin/post')")
-        template(v-slot:activator)
-          v-list-item-avatar
+      v-list-item(to="/admin/post/view")
+        v-list-item-avatar
             v-icon mdi-newspaper
-          v-list-item-content
-            v-list-item-title Posts
-        v-list-item(to="/admin/post/view")
-          v-list-item-avatar.ml-3
-              v-icon mdi-view-list
-          v-list-item-content
-            v-list-item-title View entries
-        v-list-item(to="/admin/post/edit")
-          v-list-item-avatar.ml-3
-              v-icon mdi-pencil-outline
-          v-list-item-content
-            v-list-item-title Edit entry
+        v-list-item-content
+          v-list-item-title Posts
       v-list-item(to="/admin/media/view")
         v-list-item-avatar
             v-icon mdi-image-size-select-actual
