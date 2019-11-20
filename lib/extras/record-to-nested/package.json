@@ -1,15 +1,16 @@
 {
   "name": "record-to-nested",
   "version": "1.0.0",
-  "private": true,
-  "description": "",
+  "description": "Convert array of record objects to nested treeview",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.lib.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "treeview"
+  ],
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
   "license": "MIT"
 }
