@@ -16,7 +16,7 @@
     "@types/highlight.js": "^9.12.3",
     "@types/hyperscript": "0.0.3",
     "@types/jquery": "^3.3.31",
-    "@types/node": "^12.7.9",
+    "@types/node": "^12.12.47",
     "@types/showdown": "^1.9.3",
     "codemirror": "^5.49.0",
     "core-js": "^2.6.5",
