@@ -35,7 +35,7 @@
     "vue-codemirror": "^4.0.6",
     "vue-disqus": "^3.0.5",
     "vue-property-decorator": "^8.1.0",
-    "vue-router": "^3.0.3",
+    "vue-router": "^3.3.4",
     "vuetify": "^2.0.0"
   },
   "devDependencies": {
