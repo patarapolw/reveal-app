@@ -20,7 +20,7 @@
     "@types/showdown": "^1.9.3",
     "codemirror": "^5.49.0",
     "core-js": "^2.6.5",
-    "dot-prop": "^5.1.0",
+    "dot-prop": "^5.1.1",
     "dotenv": "^8.1.0",
     "gray-matter": "^4.0.2",
     "highlight.js": "^9.15.10",
