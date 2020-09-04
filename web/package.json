@@ -28,7 +28,7 @@
     "moment": "^2.24.0",
     "record-to-nested": "file:../lib/extras/record-to-nested",
     "roboto-fontface": "*",
-    "showdown": "^1.9.0",
+    "showdown": "^1.9.1",
     "valid-moment": "^1.0.0",
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",
