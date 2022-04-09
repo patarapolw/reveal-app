@@ -25,7 +25,7 @@
     "gray-matter": "^4.0.2",
     "highlight.js": "^9.15.10",
     "hyperscript": "^2.0.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "record-to-nested": "file:../lib/extras/record-to-nested",
     "roboto-fontface": "*",
     "showdown": "^1.9.0",
