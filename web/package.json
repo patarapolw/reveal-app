@@ -39,9 +39,9 @@
     "vuetify": "^2.0.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.11.0",
+    "@vue/cli-plugin-babel": "^5.0.8",
     "@vue/cli-plugin-typescript": "^3.11.0",
-    "@vue/cli-service": "^3.11.0",
+    "@vue/cli-service": "^5.0.8",
     "@zhsrs/custom-markdown": "file:../lib/@zhsrs/custom-markdown",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.1.0",
